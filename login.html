@@ -48,7 +48,8 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
 <div class="wrap">
   <div class="app-header">
     <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192.png" alt=""/></span> 작업 사진</div>
-    <div class="app-sub">계장 &amp; 전기 공사</div>
+    <div class="app-sub" id="hdrProject" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">계장 &amp; 전기 공사</div>
+    <div class="app-sub" id="hdrCompany" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
   </div>
 
   <div class="card">
@@ -115,6 +116,13 @@ var sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // 이미 로그인된 경우 바로 이동
 if(localStorage.getItem('member_id')){location.href='index.html';}
+
+(function(){
+  var p=localStorage.getItem('member_project')||'';
+  var c=localStorage.getItem('member_company')||'';
+  if(p) document.getElementById('hdrProject').textContent=p;
+  if(c) document.getElementById('hdrCompany').textContent=c;
+})();
 
 async function loadSignupOptions(){
   try{

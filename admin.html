@@ -108,7 +108,8 @@ canvas{width:100%;border-radius:12px;display:block;}
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div>
       <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192.png" alt=""/></span> 작업 사진</div>
-      <div class="app-sub">계장 &amp; 전기 공사</div>
+      <div class="app-sub" id="hdrProject" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">계장 &amp; 전기 공사</div>
+      <div class="app-sub" id="hdrCompany" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
     </div>
     <button onclick="openSettings()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;">⚙️ 설정</button>
   </div>
@@ -232,6 +233,12 @@ canvas{width:100%;border-radius:12px;display:block;}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+(function(){
+  var p=localStorage.getItem('member_project')||'';
+  var c=localStorage.getItem('member_company')||'';
+  if(p) document.getElementById('hdrProject').textContent=p;
+  if(c) document.getElementById('hdrCompany').textContent=c;
+})();
 var CC={
   'DCS Panel':"#E67E22",'LCP':"#E74C3C",'Junction Box':"#F39C12",'Field Instrument':"#2980B9",'Cable Duct':"#16A085",
   'Cable Tray':"#8E44AD",'Conduit Pipe':"#C0392B",'Air Pipe':"#27AE60",'Hook Up':"#2E86AB",
