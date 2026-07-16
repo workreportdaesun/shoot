@@ -4,8 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>작업 사진</title>
-<link rel="icon" type="image/png" sizes="192x192" href="Work%20photo_icon/icon-192-daesun.png"/>
-<link rel="icon" type="image/png" sizes="512x512" href="Work%20photo_icon/icon-512-daesun.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="Work%20photo_icon/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="512x512" href="Work%20photo_icon/icon-512.png"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:100vh;
@@ -107,7 +107,7 @@ canvas{width:100%;border-radius:12px;display:block;}
 <div class="app-header">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div>
-      <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192-daesun.png" alt=""/></span> 작업 사진</div>
+      <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192.png" alt=""/></span> 작업 사진</div>
       <div class="app-sub">계장 &amp; 전기 공사</div>
     </div>
     <button onclick="openSettings()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;">⚙️ 설정</button>
@@ -737,7 +737,7 @@ function showTE(m){var t=document.getElementById("toastE");t.textContent=m;t.sty
 </script>
 <script>
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw-daesun.js').then(function(reg){
+  navigator.serviceWorker.register('./sw.js').then(function(reg){
     function promptUpdate(){
       if(document.getElementById('updateBanner'))return;
       var b=document.createElement('div');

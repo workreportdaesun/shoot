@@ -47,7 +47,7 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
 <body>
 <div class="wrap">
   <div class="app-header">
-    <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192-daesun.png" alt=""/></span> 작업 사진</div>
+    <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192.png" alt=""/></span> 작업 사진</div>
     <div class="app-sub">계장 &amp; 전기 공사</div>
   </div>
 
@@ -114,7 +114,7 @@ var SUPABASE_KEY='sb_publishable_VC2GcwpxDg_zVbFgOnpfzg__sictyqc';
 var sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // 이미 로그인된 경우 바로 이동
-if(localStorage.getItem('member_id')){location.href='index-daesun.html';}
+if(localStorage.getItem('member_id')){location.href='index.html';}
 
 async function loadSignupOptions(){
   try{
@@ -162,7 +162,7 @@ async function doLogin(){
   if(res.error||!res.data){showTE('등록된 번호가 없습니다. 회원가입 해주세요.');return;}
   saveSession(res.data);
   showT('안녕하세요, '+res.data.name+'님!');
-  setTimeout(function(){location.href='index-daesun.html';},900);
+  setTimeout(function(){location.href='index.html';},900);
 }
 
 async function doSignup(){
@@ -191,7 +191,7 @@ async function doSignup(){
   }
   saveSession(res.data);
   showT('가입 완료! 환영합니다, '+res.data.name+'님!');
-  setTimeout(function(){location.href='index-daesun.html';},1000);
+  setTimeout(function(){location.href='index.html';},1000);
 }
 
 function saveSession(m){
@@ -209,7 +209,7 @@ function showTE(m){var t=document.getElementById('toastE');t.textContent=m;t.sty
 </script>
 <script>
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw-daesun.js').then(function(reg){
+  navigator.serviceWorker.register('./sw.js').then(function(reg){
     function promptUpdate(){
       if(document.getElementById('updateBanner'))return;
       var b=document.createElement('div');

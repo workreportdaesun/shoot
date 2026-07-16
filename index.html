@@ -4,11 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>작업 사진</title>
-<link rel="manifest" href="Work%20photo_icon/manifest-daesun.json"/>
+<link rel="manifest" href="Work%20photo_icon/manifest.json"/>
 <meta name="theme-color" content="#1E3A5F"/>
-<link rel="icon" type="image/png" sizes="192x192" href="Work%20photo_icon/icon-192-daesun.png"/>
-<link rel="icon" type="image/png" sizes="512x512" href="Work%20photo_icon/icon-512-daesun.png"/>
-<link rel="apple-touch-icon" href="Work%20photo_icon/icon-192-daesun.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="Work%20photo_icon/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="512x512" href="Work%20photo_icon/icon-512.png"/>
+<link rel="apple-touch-icon" href="Work%20photo_icon/icon-192.png"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="작업사진"/>
@@ -146,7 +146,7 @@ textarea.f{resize:none;height:48px;}
 <div class="app-header">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div style="min-width:0;flex:1;">
-      <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192-daesun.png" alt=""/></span> 작업 사진</div>
+      <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192.png" alt=""/></span> 작업 사진</div>
       <div class="app-sub" id="hdrProject" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">계장 &amp; 전기 공사</div>
       <div class="app-sub" id="hdrCompany" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
     </div>
@@ -311,7 +311,7 @@ textarea.f{resize:none;height:48px;}
 <script>
 // ── 인증 체크 ─────────────────────────────────────────
 (function(){
-  if(!localStorage.getItem('member_id')){location.href='login-daesun.html';return;}
+  if(!localStorage.getItem('member_id')){location.href='login.html';return;}
   var p=localStorage.getItem('member_project')||'';
   var c=localStorage.getItem('member_company')||'';
   if(p) document.getElementById('hdrProject').textContent=p;
@@ -319,7 +319,7 @@ textarea.f{resize:none;height:48px;}
 })();
 function logout(){
   ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
-  location.href='login-daesun.html';
+  location.href='login.html';
 }
 function fireIconEffect(el){
   el.classList.remove('fire');
@@ -339,7 +339,7 @@ async function withdrawMember(){
     catch(e){ console.error('회원 탈퇴 실패',e); showTE('회원 탈퇴 실패: '+(e.message||e)); return; }
   }
   ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
-  location.href='login-daesun.html';
+  location.href='login.html';
 }
 
 // ── Supabase ──────────────────────────────────────────
@@ -1524,7 +1524,7 @@ function _stopSTT(btn){activeRec=null;btn.classList.remove("listening");btn.text
 </script>
 <script>
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw-daesun.js').then(function(reg){
+  navigator.serviceWorker.register('./sw.js').then(function(reg){
     function promptUpdate(){
       if(document.getElementById('updateBanner'))return;
       var b=document.createElement('div');

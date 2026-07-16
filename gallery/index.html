@@ -533,7 +533,7 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
 <script>
 // ── 인증 체크 ─────────────────────────────────────────
 (function(){
-  if(!localStorage.getItem('member_id')){location.href='../login-daesun.html';return;}
+  if(!localStorage.getItem('member_id')){location.href='../login.html';return;}
   const n=localStorage.getItem('member_name')||'';
   const c=localStorage.getItem('member_company')||'';
   const chip=document.getElementById('hdrUserChip');
@@ -541,7 +541,7 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
 })();
 function galleryLogout(){
   ['member_id','member_name','member_company','member_project','member_phone','senderName'].forEach(k=>localStorage.removeItem(k));
-  location.href='../login-daesun.html';
+  location.href='../login.html';
 }
 
 // ── Supabase ─────────────────────────────────────────
