@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>로그인 — 작업 사진</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:100vh;
+  padding:24px 16px;font-size:17px;}
+.wrap{max-width:420px;margin:0 auto;}
+.app-header{background:linear-gradient(135deg,#1E3A5F,#2E5F9E);border-radius:12px;
+  padding:14px 18px;margin-bottom:16px;color:#fff;}
+.app-title{font-size:28px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+.app-title img{width:52px;height:52px;border-radius:8px;}
+.app-sub{font-size:11px;opacity:0.75;margin-top:2px;}
+.icon-wrap{position:relative;display:inline-flex;flex:none;cursor:pointer;}
+.icon-wrap.fire img{animation:wp-icon-pop 3.2s ease-in-out;}
+@keyframes wp-icon-pop{0%{transform:scale(1);}20%{transform:scale(1.4);}40%{transform:scale(.8);}60%{transform:scale(1.4);}80%{transform:scale(.8);}100%{transform:scale(1);}}
+.card{background:#fff;border:1px solid #D1DCE8;border-radius:12px;
+  padding:16px;box-shadow:0 2px 6px rgba(0,0,0,0.06);}
+.tab-bar{display:grid;grid-template-columns:1fr 1fr;margin-bottom:18px;
+  border-radius:8px;overflow:hidden;border:1.5px solid #C8D8E8;}
+.tab-btn{padding:11px;border:none;background:#F7FAFC;font-size:15px;font-weight:700;
+  cursor:pointer;color:#5A7A9A;transition:all 0.2s;}
+.tab-btn.active{background:#2E5F9E;color:#fff;}
+.flbl{font-size:11px;font-weight:700;color:#5A7A9A;letter-spacing:0.5px;
+  text-transform:uppercase;margin-bottom:5px;margin-top:14px;}
+.flbl:first-child{margin-top:0;}
+.f{width:100%;background:#F7FAFC;border:1.5px solid #C8D8E8;border-radius:8px;
+  padding:11px;color:#1A2332;font-size:17px;outline:none;font-family:Arial;
+  transition:border-color 0.2s;}
+.f:focus{border-color:#2E5F9E;background:#fff;}
+.sbtn{width:100%;padding:13px;border:none;border-radius:10px;font-size:16px;
+  font-weight:800;cursor:pointer;margin-top:18px;
+  background:linear-gradient(135deg,#2980B9,#1A5276);color:#fff;}
+.sbtn:disabled{background:#BDC3C7;cursor:not-allowed;}
+#toast,#toastE{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;
+  display:none;z-index:9998;white-space:nowrap;color:#fff;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+#toast{background:#27AE60;}
+#toastE{background:#E74C3C;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="app-header">
+    <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192-daesun.png" alt=""/></span> 작업 사진</div>
+    <div class="app-sub">계장 &amp; 전기 공사</div>
+  </div>
+
+  <div class="card">
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">로그인</button>
+      <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">회원가입</button>
+    </div>
+
+    <!-- 로그인 -->
+    <div id="panelLogin">
+      <div class="flbl">전화번호</div>
+      <input type="tel" id="loginPhone" class="f" placeholder="01012345678"/>
+      <button class="sbtn" onclick="doLogin()">로그인</button>
+    </div>
+
+    <!-- 회원가입 -->
+    <div id="panelSignup" style="display:none;">
+      <div class="flbl">회사명</div>
+      <input type="text" id="regCompany" class="f" placeholder="(주)OOO건설" list="companyList" autocomplete="off" value="대선이엔씨(주)"/>
+      <datalist id="companyList"></datalist>
+      <div class="flbl">프로젝트명</div>
+      <input type="text" id="regProject" class="f" placeholder="OOO 플랜트 공사" list="projectList" autocomplete="off" value="S-OIL SHAHEEN Project 계장공사 3공구(PKG-1)"/>
+      <datalist id="projectList"></datalist>
+      <div class="flbl">이름</div>
+      <input type="text" id="regName" class="f" placeholder="홍길동"/>
+      <div class="flbl">전화번호</div>
+      <input type="tel" id="regPhone" class="f" placeholder="01012345678"/>
+      <div class="flbl">작업 분류</div>
+      <select id="regCategory" class="f">
+        <option value="DCS Panel">DCS Panel</option>
+        <option value="LCP">LCP</option>
+        <option value="Junction Box">Junction Box</option>
+        <option value="Field Instrument" selected>Field Instrument</option>
+        <option value="Cable Duct">Cable Duct</option>
+        <option value="Cable Tray">Cable Tray</option>
+        <option value="Conduit Pipe">Conduit Pipe</option>
+        <option value="Air Pipe">Air Pipe</option>
+        <option value="Hook Up">Hook Up</option>
+        <option value="Stanchion">Stanchion</option>
+        <option value="Support">Support</option>
+        <option value="Connection">Connection</option>
+        <option value="Line Check">Line Check</option>
+        <option value="Loop Test">Loop Test</option>
+        <option value="Leak Test">Leak Test</option>
+        <option value="Instrument Calibration">Instrument Calibration</option>
+        <option value="Steam Tracing Tube">Steam Tracing Tube</option>
+        <option value="Steam Tracing Insulation">Steam Tracing Insulation</option>
+        <option value="Scaffolding">Scaffolding</option>
+        <option value="Others">Others</option>
+        <option value="관리자">관리자</option>
+      </select>
+      <button class="sbtn" onclick="doSignup()">가입하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="toastE"></div>
+
+<script>
+var SUPABASE_URL='https://dteljgmdbfyxubtpogcj.supabase.co';
+var SUPABASE_KEY='sb_publishable_VC2GcwpxDg_zVbFgOnpfzg__sictyqc';
+var sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+// 이미 로그인된 경우 바로 이동
+if(localStorage.getItem('member_id')){location.href='index-daesun.html';}
+
+async function loadSignupOptions(){
+  try{
+    var res=await sbClient.from('members').select('company,project');
+    if(res.error||!res.data)return;
+    var companies=Array.from(new Set(res.data.map(function(r){return r.company;}).filter(Boolean)));
+    var projects=Array.from(new Set(res.data.map(function(r){return r.project;}).filter(Boolean)));
+    function toOptions(list){
+      return list.map(function(v){
+        var o=document.createElement('option');
+        o.value=v;
+        return o.outerHTML;
+      }).join('');
+    }
+    document.getElementById('companyList').innerHTML=toOptions(companies);
+    document.getElementById('projectList').innerHTML=toOptions(projects);
+  }catch(e){console.error('가입 옵션 로드 실패',e);}
+}
+loadSignupOptions();
+
+function switchTab(t){
+  document.getElementById('panelLogin').style.display=t==='login'?'':'none';
+  document.getElementById('panelSignup').style.display=t==='signup'?'':'none';
+  document.getElementById('tabLogin').classList.toggle('active',t==='login');
+  document.getElementById('tabSignup').classList.toggle('active',t==='signup');
+}
+
+function fireIconEffect(el){
+  el.classList.remove('fire');
+  void el.offsetWidth;
+  el.classList.add('fire');
+}
+document.addEventListener('animationend',function(e){
+  var wrap=e.target.closest&&e.target.closest('.icon-wrap');
+  if(wrap)wrap.classList.remove('fire');
+});
+
+function normPhone(v){return v.replace(/\D/g,'');}
+
+async function doLogin(){
+  var phone=normPhone(document.getElementById('loginPhone').value.trim());
+  if(phone.length<10){showTE('전화번호를 입력해 주세요.');return;}
+  showT('확인 중...');
+  var res=await sbClient.from('members').select('*').eq('phone',phone).single();
+  if(res.error||!res.data){showTE('등록된 번호가 없습니다. 회원가입 해주세요.');return;}
+  saveSession(res.data);
+  showT('안녕하세요, '+res.data.name+'님!');
+  setTimeout(function(){location.href='index-daesun.html';},900);
+}
+
+async function doSignup(){
+  var company=document.getElementById('regCompany').value.trim();
+  var project=document.getElementById('regProject').value.trim();
+  var name=document.getElementById('regName').value.trim();
+  var phone=normPhone(document.getElementById('regPhone').value.trim());
+  var category=document.getElementById('regCategory').value;
+  if(!company||!project||!name||phone.length<10){showTE('모든 항목을 입력해 주세요.');return;}
+  showT('가입 중...');
+  var insertData={company:company,project:project,name:name,phone:phone,category:category};
+  var res=await sbClient.from('members').insert(insertData).select().single();
+  if(res.error){
+    var msg=res.error.message||'';
+    if(msg.toLowerCase().includes('category')){
+      var d2=Object.assign({},insertData); delete d2.category;
+      res=await sbClient.from('members').insert(d2).select().single();
+      if(res.data) res.data.category=category;
+    }
+    if(res.error){
+      var msg2=res.error.message||'';
+      if(msg2.includes('unique')||msg2.includes('duplicate')){showTE('이미 등록된 전화번호입니다.');}
+      else{showTE('가입 실패: '+msg2);}
+      return;
+    }
+  }
+  saveSession(res.data);
+  showT('가입 완료! 환영합니다, '+res.data.name+'님!');
+  setTimeout(function(){location.href='index-daesun.html';},1000);
+}
+
+function saveSession(m){
+  localStorage.setItem('member_id',m.id);
+  localStorage.setItem('member_name',m.name);
+  localStorage.setItem('member_company',m.company);
+  localStorage.setItem('member_project',m.project);
+  localStorage.setItem('member_phone',m.phone);
+  localStorage.setItem('senderName',m.name);
+  if(m.category) localStorage.setItem('member_category',m.category);
+}
+
+function showT(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none';},2500);}
+function showTE(m){var t=document.getElementById('toastE');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none';},6000);}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw-daesun.js').then(function(reg){
+    function promptUpdate(){
+      if(document.getElementById('updateBanner'))return;
+      var b=document.createElement('div');
+      b.id='updateBanner';
+      b.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1A2332;color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,0.35);white-space:nowrap;';
+      b.innerHTML='새 버전이 있습니다 <button id="updateBtn" style="background:#FEE500;color:#1A2332;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:800;cursor:pointer;">업데이트</button>';
+      document.body.appendChild(b);
+      document.getElementById('updateBtn').onclick=function(){
+        if(reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+      };
+    }
+    if(reg.waiting && navigator.serviceWorker.controller) promptUpdate();
+    reg.addEventListener('updatefound',function(){
+      var nw=reg.installing;
+      if(!nw)return;
+      nw.addEventListener('statechange',function(){
+        if(nw.state==='installed' && navigator.serviceWorker.controller) promptUpdate();
+      });
+    });
+    document.addEventListener('visibilitychange',function(){
+      if(document.visibilityState==='visible') reg.update();
+    });
+    reg.update();
+  });
+  var wpReloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(wpReloading)return;
+    wpReloading=true;
+    location.reload();
+  });
+}
+</script>
+</body>
+</html>

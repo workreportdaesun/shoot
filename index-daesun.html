@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>작업 사진</title>
+<link rel="manifest" href="Work%20photo_icon/manifest-daesun.json"/>
+<meta name="theme-color" content="#1E3A5F"/>
+<link rel="icon" type="image/png" sizes="192x192" href="Work%20photo_icon/icon-192-daesun.png"/>
+<link rel="icon" type="image/png" sizes="512x512" href="Work%20photo_icon/icon-512-daesun.png"/>
+<link rel="apple-touch-icon" href="Work%20photo_icon/icon-192-daesun.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="작업사진"/>
+<style>
+:root{--brand-1:#1E3A5F;--brand-2:#2E5F9E;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:100vh;
+  padding:8px;font-size:17px;}
+.app-header{background:linear-gradient(135deg,var(--brand-1),var(--brand-2));border-radius:12px;
+  padding:10px 14px;margin-bottom:8px;color:#fff;transition:background 0.25s;}
+.app-title{font-size:26px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+.app-title img{width:48px;height:48px;border-radius:8px;}
+.app-sub{font-size:11px;opacity:0.75;margin-top:1px;}
+.icon-wrap{position:relative;display:inline-flex;flex:none;cursor:pointer;}
+.icon-wrap.fire img{animation:wp-icon-pop 3.2s ease-in-out;}
+@keyframes wp-icon-pop{0%{transform:scale(1);}20%{transform:scale(1.4);}40%{transform:scale(.8);}60%{transform:scale(1.4);}80%{transform:scale(.8);}100%{transform:scale(1);}}
+.card{background:#fff;border:1px solid #D1DCE8;border-radius:12px;
+  padding:10px 12px;margin-bottom:8px;box-shadow:0 2px 6px rgba(0,0,0,0.06);}
+.flbl{font-size:11px;font-weight:700;color:#5A7A9A;letter-spacing:0.5px;
+  text-transform:uppercase;margin-bottom:4px;margin-top:8px;}
+.flbl:first-child{margin-top:0;}
+.f{width:100%;background:#F7FAFC;border:1.5px solid #C8D8E8;border-radius:8px;
+  padding:9px 11px;color:#1A2332;font-size:17px;outline:none;font-family:Arial;
+  transition:border-color 0.2s;}
+.f:focus{border-color:var(--brand-2);background:#fff;}
+select.f option{background:#fff;color:#1A2332;}
+textarea.f{resize:none;height:48px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cat-bar{height:3px;border-radius:2px;margin-top:6px;transition:background 0.2s;}
+.cam-box{width:100%;height:70px;background:#EAF0F8;border:2px dashed #A0BBD4;
+  border-radius:12px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;cursor:pointer;position:relative;overflow:hidden;}
+.cam-placeholder p{font-size:18px;color:#7A9AB8;margin-top:4px;font-weight:700;}
+.cam-placeholder .icon{font-size:22px;}
+.corner{position:absolute;width:18px;height:18px;}
+.tl{top:8px;left:8px;border-top:3px solid #2E5F9E;border-left:3px solid #2E5F9E;border-radius:3px 0 0 0;}
+.tr{top:8px;right:8px;border-top:3px solid #2E5F9E;border-right:3px solid #2E5F9E;border-radius:0 3px 0 0;}
+.bl{bottom:8px;left:8px;border-bottom:3px solid #2E5F9E;border-left:3px solid #2E5F9E;border-radius:0 0 0 3px;}
+.br{bottom:8px;right:8px;border-bottom:3px solid #2E5F9E;border-right:3px solid #2E5F9E;border-radius:0 0 3px 0;}
+#camModal{display:none;position:fixed;inset:0;background:#000;z-index:9999;
+  align-items:center;justify-content:center;}
+#camViewport{position:relative;overflow:hidden;background:#000;touch-action:none;}
+#camVideo{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center center;}
+#camCloseBtn{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;
+  background:rgba(0,0,0,0.5);color:#fff;border:none;font-size:18px;cursor:pointer;}
+#camShotBtn{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+  width:70px;height:70px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,0.5);cursor:pointer;}
+#camZoomWrap{position:absolute;bottom:114px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;width:70%;max-width:260px;z-index:2;}
+#camZoomLabel{color:#fff;font-size:12px;font-weight:800;min-width:36px;text-align:right;
+  text-shadow:0 1px 2px rgba(0,0,0,0.8);}
+#camZoomSlider{flex:1;}
+#camRatioBadge{position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.55);color:#fff;font-size:13px;font-weight:800;
+  padding:5px 14px;border-radius:20px;letter-spacing:0.5px;pointer-events:none;z-index:2;}
+.cam-guide-line{position:absolute;background:rgba(255,255,255,0.4);pointer-events:none;}
+.cam-guide-line.v{width:1px;top:0;bottom:0;}
+.cam-guide-line.h{height:1px;left:0;right:0;}
+#camViewport .corner{border-color:#fff;filter:drop-shadow(0 0 2px rgba(0,0,0,0.8));}
+.sbtn{width:100%;padding:11px;border:none;border-radius:10px;font-size:15px;
+  font-weight:800;cursor:pointer;margin-top:8px;}
+.sbtn-send{background:linear-gradient(135deg,var(--brand-2),var(--brand-1));color:#fff;transition:background 0.25s;}
+.sbtn-send:disabled{background:#BDC3C7;color:#fff;cursor:not-allowed;}
+.sbtn-kakao{background:#FEE500;color:#1A2332;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.sbtn-kakao:disabled{background:#F5E6A0;color:#8A8560;cursor:not-allowed;}
+.list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.list-title{font-size:13px;font-weight:700;color:#1A2332;}
+.list-count{font-size:13px;font-weight:800;color:#2E5F9E;}
+.saved-list{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.saved-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;
+  border:2px solid #D1DCE8;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.saved-item img{width:100%;height:100%;object-fit:cover;}
+.del-btn{position:absolute;top:2px;right:2px;background:rgba(231,76,60,0.9);
+  border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:11px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:800;}
+.num-badge{position:absolute;bottom:2px;left:4px;font-size:10px;color:#fff;
+  font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,0.6);}
+.empty-msg{grid-column:span 4;text-align:center;padding:14px;color:#A0BBD4;font-size:13px;}
+.mic-row{display:flex;gap:6px;align-items:stretch;}
+.mic-row .f{flex:1;}
+.mic-btn{flex-shrink:0;width:44px;border:1.5px solid #C8D8E8;border-radius:8px;
+  background:#F7FAFC;font-size:18px;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;transition:background 0.15s,border-color 0.15s;}
+.mic-btn:active{background:#EAF0F8;}
+.mic-btn.listening{background:#FDEDEC;border-color:#E74C3C;animation:micpulse 0.8s infinite alternate;}
+@keyframes micpulse{from{box-shadow:0 0 0 0 rgba(231,76,60,0.4);}to{box-shadow:0 0 0 5px rgba(231,76,60,0);}}
+.ratio-btn{border:1.5px solid #C8D8E8;background:#F7FAFC;color:#5A7A9A;border-radius:6px;
+  padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;}
+.ratio-btn.active{background:#2E5F9E;border-color:#2E5F9E;color:#fff;}
+.menu-tabs{display:flex;gap:6px;}
+.menu-tab{flex:1;border:1.5px solid #C8D8E8;background:#F7FAFC;color:#5A7A9A;
+  border-radius:8px;padding:6px 4px;font-size:14px;font-weight:700;cursor:pointer;
+  line-height:1.3;text-align:center;}
+.menu-tab.active{background:#2E5F9E;border-color:#2E5F9E;color:#fff;}
+.menu-tab[data-menu="자재"]{border-color:#D6B98C;color:#8B5E3C;}
+.menu-tab[data-menu="안전"]{border-color:#F8D386;color:#B9770E;}
+.menu-tab[data-menu="품질"]{border-color:#A3E4C1;color:#1E8449;}
+.menu-tab[data-menu="화기/유도"]{border-color:#F1B0A8;color:#C0392B;}
+.menu-tab.active[data-menu="자재"]{background:#A0703A;border-color:#A0703A;color:#fff;}
+.menu-tab.active[data-menu="안전"]{background:#F39C12;border-color:#F39C12;color:#fff;}
+.menu-tab.active[data-menu="품질"]{background:#27AE60;border-color:#27AE60;color:#fff;}
+.menu-tab.active[data-menu="화기/유도"]{background:#C0392B;border-color:#C0392B;color:#fff;}
+#settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
+  z-index:9997;align-items:center;justify-content:center;padding:16px;}
+#settingsBox{background:#fff;border-radius:14px;width:100%;max-width:420px;
+  max-height:86vh;overflow-y:auto;padding:16px;}
+.set-header{display:flex;justify-content:space-between;align-items:center;
+  font-size:16px;font-weight:800;color:#1A2332;margin-bottom:10px;}
+.set-header button{background:none;border:none;font-size:16px;color:#7A9AB8;cursor:pointer;}
+.set-section{margin-top:14px;padding-top:14px;border-top:1px solid #E8EEF4;}
+.set-section:first-of-type{margin-top:0;padding-top:0;border-top:none;}
+.set-title{font-size:12px;font-weight:800;color:#5A7A9A;text-transform:uppercase;
+  letter-spacing:0.5px;margin-bottom:8px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.chip{display:flex;align-items:center;gap:5px;background:#F7FAFC;border:1.5px solid #C8D8E8;
+  border-radius:14px;padding:4px 6px 4px 12px;font-size:13px;color:#1A2332;}
+.chip button{background:none;border:none;color:#A0BBD4;font-size:13px;cursor:pointer;padding:2px 6px;}
+.chip button:hover{color:#E74C3C;}
+.add-row{display:flex;gap:6px;}
+.add-row input{flex:1;}
+.add-row button{flex-shrink:0;background:#2E5F9E;color:#fff;border:none;border-radius:8px;
+  padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;}
+#toast,#toastE{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;
+  display:none;z-index:9998;white-space:nowrap;color:#fff;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+#toast{background:#27AE60;}
+#toastE{background:#E74C3C;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/2.0.0-beta.8/piexif.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="app-header">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div style="min-width:0;flex:1;">
+      <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192-daesun.png" alt=""/></span> 작업 사진</div>
+      <div class="app-sub" id="hdrProject" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">계장 &amp; 전기 공사</div>
+      <div class="app-sub" id="hdrCompany" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+      <button onclick="logout()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">로그아웃</button>
+      <button onclick="openSettings()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">⚙️ 설정</button>
+      <button id="folderBtn" onclick="pickSaveFolder()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">📁 폴더설정</button>
+    </div>
+  </div>
+</div>
+
+<!-- 상위 메뉴 -->
+<div class="card" style="padding:8px;">
+  <div class="menu-tabs" id="menuTabs">
+    <button type="button" class="menu-tab" data-menu="시공" onclick="setActiveMenu('시공')">시공</button>
+    <button type="button" class="menu-tab" data-menu="품질" onclick="setActiveMenu('품질')">품질</button>
+    <button type="button" class="menu-tab" data-menu="자재" onclick="setActiveMenu('자재')">자재</button>
+    <button type="button" class="menu-tab" data-menu="안전" onclick="setActiveMenu('안전')">안전</button>
+    <button type="button" class="menu-tab" data-menu="화기/유도" onclick="setActiveMenu('화기/유도')">화기<br>유도</button>
+  </div>
+</div>
+
+<!-- 정보 입력 -->
+<div class="card">
+  <div class="flbl" id="lblTag">기기번호</div>
+  <div class="mic-row">
+    <input type="text" id="inTag" class="f" placeholder="PT-2101, EQ-001 등"
+      oninput="this.value=this.value.toUpperCase()"/>
+    <button class="mic-btn" id="micTag" onclick="startSTT('inTag','micTag')" title="음성 입력">&#127908;</button>
+  </div>
+
+  <div class="flbl" id="lblWorkType">작업 구분</div>
+  <div style="display:flex;gap:8px;margin-bottom:4px;">
+    <label style="flex:1;min-width:80px;display:flex;align-items:center;gap:6px;background:#F7FAFC;
+      border:1.5px solid #C8D8E8;border-radius:8px;padding:9px 10px;cursor:pointer;
+      font-size:17px;font-weight:700;color:var(--brand-2);">
+      <input type="radio" name="workType" id="wtNew" value="신규" checked
+        style="width:16px;height:16px;accent-color:var(--brand-2);"/>
+      <span id="wtNewLabel">신규</span>
+    </label>
+    <label style="flex:1;min-width:80px;display:flex;align-items:center;gap:6px;background:#F7FAFC;
+      border:1.5px solid #C8D8E8;border-radius:8px;padding:9px 10px;cursor:pointer;
+      font-size:17px;font-weight:700;color:#E67E22;">
+      <input type="radio" name="workType" id="wtMod" value="수정"
+        style="width:16px;height:16px;accent-color:#E67E22;"/>
+      <span id="wtModLabel">수정</span>
+    </label>
+  </div>
+  <select id="inPhase" class="f" style="display:none;margin-bottom:4px;"></select>
+
+  <div class="row2">
+    <div>
+      <div class="flbl" id="lblCat">작업 분류</div>
+      <select id="inCat" class="f"></select>
+      <div class="cat-bar" id="catBar"></div>
+    </div>
+    <div>
+      <div class="flbl" id="lblLoc">작업 구역</div>
+      <select id="inLoc" class="f"></select>
+    </div>
+  </div>
+
+  <div class="flbl">특이사항</div>
+  <div class="mic-row" style="align-items:flex-start;">
+    <textarea id="inNote" class="f" placeholder="특이사항..."></textarea>
+    <button class="mic-btn" id="micNote" onclick="startSTT('inNote','micNote')" title="음성 입력" style="height:48px;">&#127908;</button>
+  </div>
+</div>
+
+<!-- 카메라 -->
+<div class="card" id="camCard">
+  <div class="flbl" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>사진 촬영 (탭하면 바로 추가)</span>
+    <div style="display:flex;gap:4px;">
+      <button type="button" id="ratioBtn67" class="ratio-btn" onclick="setCaptureRatio('6:7')">6:7</button>
+      <button type="button" id="ratioBtn169" class="ratio-btn" onclick="setCaptureRatio('16:9')">16:9</button>
+      <label for="galleryFileInput" id="galleryPickBtn" class="ratio-btn" style="display:inline-block;">🖼 갤러리전송</label>
+    </div>
+  </div>
+  <div class="cam-box" id="camBox">
+    <div class="cam-placeholder" style="text-align:center;pointer-events:none;">
+      <div class="icon">&#128247;</div>
+      <p>탭하여 촬영</p>
+    </div>
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+  </div>
+  <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none"/>
+  <!-- 휴대폰에 이미 저장된 사진을 여러 장 골라 업로드하기 위한 입력 (capture 속성 없음 → 사진첩이 열림) -->
+  <input type="file" id="galleryFileInput" accept="image/*" multiple style="display:none"/>
+</div>
+
+<!-- 후면 카메라 실시간 촬영 -->
+<div id="camModal">
+  <div id="camViewport">
+    <video id="camVideo" autoplay playsinline muted></video>
+    <div class="cam-guide-line v" style="left:33.333%;"></div>
+    <div class="cam-guide-line v" style="left:66.666%;"></div>
+    <div class="cam-guide-line h" style="top:33.333%;"></div>
+    <div class="cam-guide-line h" style="top:66.666%;"></div>
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+    <div id="camRatioBadge">3:4</div>
+  </div>
+  <button id="camCloseBtn" onclick="closeCamera()">&#10005;</button>
+  <div id="camZoomWrap">
+    <span id="camZoomLabel">1.0x</span>
+    <input type="range" id="camZoomSlider" min="1" max="3" step="0.1" value="1"/>
+  </div>
+  <button id="camShotBtn" onclick="captureShot()"></button>
+</div>
+
+<!-- 설정 -->
+<div id="settingsOverlay">
+  <div id="settingsBox">
+    <div class="set-header">
+      <span>⚙️ 설정</span>
+      <button onclick="closeSettings()">&#10005;</button>
+    </div>
+    <div class="set-section">
+      <div class="set-title" id="catSectionTitle">작업 분류 관리</div>
+      <div class="chip-row" id="catChips"></div>
+      <div class="add-row">
+        <input type="text" id="newCatInput" class="f" placeholder="새 분류 이름"/>
+        <button onclick="addCategory()">추가</button>
+      </div>
+    </div>
+    <div class="set-section">
+      <div class="set-title">작업 구역 관리</div>
+      <div class="chip-row" id="areaChips"></div>
+      <div class="add-row">
+        <input type="text" id="newAreaInput" class="f" placeholder="새 구역 이름"/>
+        <button onclick="addArea()">추가</button>
+      </div>
+    </div>
+    <button onclick="saveSettingsChanges()" style="width:100%;margin-top:14px;background:var(--brand-2);
+      color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:800;cursor:pointer;">💾 저장</button>
+    <div class="set-section">
+      <div class="set-title">계정</div>
+      <button onclick="withdrawMember()" style="width:100%;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.5);color:#E74C3C;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;">회원탈퇴</button>
+    </div>
+  </div>
+</div>
+
+<!-- 저장된 사진 목록 -->
+<div class="card" id="listCard" style="display:none;">
+  <div class="list-header">
+    <div>
+      <span class="list-title">저장된 사진 </span>
+      <span class="list-count" id="photoCount">0</span>
+      <span class="list-title">장</span>
+    </div>
+  </div>
+  <div class="saved-list" id="savedList"></div>
+  <button class="sbtn sbtn-send" id="sendBtn" onclick="sendToSupabase()">&#9729;&#65039; 전송하기</button>
+  <button class="sbtn sbtn-kakao" id="kakaoBtn" onclick="shareToKakao()">&#128172; 카톡으로 전송</button>
+</div>
+
+<div id="toast"></div>
+<div id="toastE"></div>
+
+<script>
+// ── 인증 체크 ─────────────────────────────────────────
+(function(){
+  if(!localStorage.getItem('member_id')){location.href='login-daesun.html';return;}
+  var p=localStorage.getItem('member_project')||'';
+  var c=localStorage.getItem('member_company')||'';
+  if(p) document.getElementById('hdrProject').textContent=p;
+  if(c) document.getElementById('hdrCompany').textContent=c;
+})();
+function logout(){
+  ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
+  location.href='login-daesun.html';
+}
+function fireIconEffect(el){
+  el.classList.remove('fire');
+  void el.offsetWidth;
+  el.classList.add('fire');
+}
+document.addEventListener('animationend',function(e){
+  var wrap=e.target.closest&&e.target.closest('.icon-wrap');
+  if(wrap)wrap.classList.remove('fire');
+});
+
+async function withdrawMember(){
+  if(!confirm('정말 회원 탈퇴하시겠습니까? 계정 정보가 삭제되며 되돌릴 수 없습니다.'))return;
+  var memberId=localStorage.getItem('member_id');
+  if(memberId&&sbClient){
+    try{ await sbClient.from('members').delete().eq('id',memberId); }
+    catch(e){ console.error('회원 탈퇴 실패',e); showTE('회원 탈퇴 실패: '+(e.message||e)); return; }
+  }
+  ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
+  location.href='login-daesun.html';
+}
+
+// ── Supabase ──────────────────────────────────────────
+var SUPABASE_URL='https://dteljgmdbfyxubtpogcj.supabase.co';
+var SUPABASE_KEY='sb_publishable_VC2GcwpxDg_zVbFgOnpfzg__sictyqc';
+var sbClient=null;
+try{ sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }
+catch(e){ console.error('Supabase 초기화 실패',e); }
+
+async function sendToSupabase(){
+  if(!savedPhotos.length){ showTE("전송할 사진이 없습니다."); return; }
+  if(!sbClient){ showTE("Supabase 연결 실패"); return; }
+  // 업로드 전(=사용자 제스처가 살아있는 시점)에 폴더 미지정 여부를 먼저 확인 — 업로드 대기 이후엔 브라우저가 폴더 선택창을 막을 수 있음
+  if(!isMobile && window.showDirectoryPicker && !dirHandle){
+    var wantsFolder=confirm('기기에 사진을 저장할 폴더가 지정되지 않았습니다.\n\n지금 폴더를 지정하시겠습니까?\n(취소하면 다운로드 폴더에 개별 저장됩니다)');
+    if(wantsFolder) await pickSaveFolder();
+  }
+  var btn=document.getElementById('sendBtn');
+  btn.disabled=true;
+  var total=savedPhotos.length;
+  var succeeded=[], failed=[];
+  for(var i=0;i<total;i++){
+    var p=savedPhotos[i];
+    btn.textContent='⏳ 전송 중... ('+(i+1)+'/'+total+'장)';
+    try{
+      var filePath=(p.info.date||'nodate')+'/'+p.filename;
+      // 갤러리전송은 원본 파일(blob=File)을 그대로 올리므로, 실제 파일 형식(png/heic 등)에 맞는
+      // contentType을 써야 한다 — 항상 image/jpeg로 고정하면 실제로는 다른 형식일 때 문제될 수 있다.
+      var uploadType=(p.blob&&p.blob.type)||'image/jpeg';
+      var storageRes=await sbClient.storage.from('work-photo').upload(filePath,p.blob,{contentType:uploadType,upsert:true});
+      if(storageRes.error){ failed.push({p:p,err:'[Storage] '+storageRes.error.message}); continue; }
+      var photoUrl=sbClient.storage.from('work-photo').getPublicUrl(filePath).data.publicUrl;
+      var insertData={
+        date:p.info.date||'', time:p.info.time||'', tag:p.info.tag||'',
+        cat:p.info.cat||'', loc:p.info.loc||'', work_type:p.info.wt||'',
+        note:p.info.note||'', photo_url:photoUrl,
+        sender:localStorage.getItem('member_name')||localStorage.getItem('senderName')||'',
+        menu:p.info.menu||''
+      };
+      // sender/menu 컬럼이 DB에 없으면 해당 필드만 제거하고 재시도
+      var OPTIONAL_COLS=['sender','menu'];
+      var dbRes=await sbClient.from('work_photos').insert(insertData);
+      var attempts=0;
+      while(dbRes.error&&attempts<OPTIONAL_COLS.length){
+        var msg=(dbRes.error.message||'').toLowerCase();
+        var stripped=false;
+        for(var k=0;k<OPTIONAL_COLS.length;k++){
+          var col=OPTIONAL_COLS[k];
+          if((col in insertData)&&msg.includes(col)){ delete insertData[col]; stripped=true; break; }
+        }
+        if(!stripped)break;
+        dbRes=await sbClient.from('work_photos').insert(insertData);
+        attempts++;
+      }
+      if(dbRes.error){ failed.push({p:p,err:'[DB] '+dbRes.error.message}); continue; }
+      succeeded.push(p);
+    }catch(e){ failed.push({p:p,err:e.message||String(e)}); }
+  }
+  btn.disabled=false;
+  btn.textContent='☁️ 전송하기';
+
+  // 실패한 사진은 목록에 그대로 보류(재전송 가능), 성공한 사진만 기기에 저장 후 정리.
+  // 단, 갤러리전송(source:'gallery')은 원본이 이미 폰 사진첩에 있으므로 다시 저장하지 않는다.
+  savedPhotos=failed.map(function(f){return f.p;});
+  updateList();
+  if(succeeded.length){
+    var toDeviceSave=succeeded.filter(function(p){return p.source!=='gallery';});
+    var galleryOnly=succeeded.filter(function(p){return p.source==='gallery';});
+    if(toDeviceSave.length) autoSaveToDevice(toDeviceSave);
+    if(galleryOnly.length) finishSend(galleryOnly);
+  }
+
+  if(!failed.length){
+    showT('✅ 전송 완료! ('+succeeded.length+'장) 저장 중...');
+  } else {
+    console.error('[전송 실패 상세]', failed.map(function(f){return {filename:f.p.filename, err:f.err};}));
+    var errList=failed.map(function(f){return (f.p.filename||f.p.info.tag||'?')+': '+f.err;}).join(' / ');
+    if(succeeded.length){
+      showTE('❌ 전송 실패 '+failed.length+'장 (성공 '+succeeded.length+'장은 목록에서 사라짐, 실패한 사진만 아래에 남음) — '+errList);
+    } else {
+      showTE('❌ 전송 실패 — '+errList);
+    }
+  }
+}
+
+async function shareToKakao(){
+  if(!savedPhotos.length){ showTE('전송할 사진이 없습니다.'); return; }
+  var btn=document.getElementById('kakaoBtn');
+
+  function fallbackDownload(){
+    savedPhotos.forEach(function(p){
+      var a=document.createElement('a');
+      a.href=p.dataUrl;a.download=p.filename;
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+    });
+    showT('사진 '+savedPhotos.length+'장 저장됨 → 카카오톡에서 직접 전송하세요');
+  }
+
+  var files=savedPhotos.map(function(p){return new File([p.blob],p.filename,{type:'image/jpeg'});});
+  var shareData={files:files,title:'작업 사진 '+savedPhotos.length+'장'};
+
+  if(!navigator.share||!navigator.canShare||!navigator.canShare(shareData)){
+    fallbackDownload();
+    return;
+  }
+
+  btn.disabled=true;
+  try{
+    await navigator.share(shareData);
+    showT('카톡 공유 화면으로 전달했습니다.');
+  }catch(e){
+    if(e.name!=='AbortError') fallbackDownload();
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+var dirHandle=null;
+var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+(function(){
+  var btn=document.getElementById('folderBtn');
+  if(isMobile) btn.style.display='none';
+})();
+
+async function pickSaveFolder(){
+  if(!window.showDirectoryPicker){showTE('Chrome/Edge 데스크탑 전용 기능입니다.');return;}
+  try{
+    dirHandle=await window.showDirectoryPicker({mode:'readwrite',startIn:'downloads'});
+    document.getElementById('folderBtn').textContent='📁 '+dirHandle.name;
+    showT('저장 폴더: '+dirHandle.name);
+    persistFolderHandle(dirHandle);
+  }catch(e){
+    if(e.name!=='AbortError') showTE('폴더 선택 실패: '+e.message);
+  }
+}
+
+async function ensureFolderPermission(handle){
+  try{
+    var result=await handle.requestPermission({mode:'readwrite'});
+    return result==='granted';
+  }catch(e){ return false; }
+}
+
+async function autoSaveToDevice(photos){
+  if(dirHandle&&!isMobile&&!(await ensureFolderPermission(dirHandle))){
+    showTE('폴더 접근 권한이 만료되었습니다. 폴더를 다시 지정해주세요.');
+    downloadAll(photos);
+    setTimeout(function(){finishSend(photos);},photos.length*300+2000);
+    return;
+  }
+  if(dirHandle&&!isMobile){
+    var cnt=0, lastErr='';
+    for(var i=0;i<photos.length;i++){
+      var p=photos[i];
+      try{
+        var ab=await new Promise(function(res,rej){
+          var fr=new FileReader();fr.onload=function(e){res(e.target.result);};fr.onerror=rej;
+          fr.readAsArrayBuffer(p.blob);
+        });
+        // 메뉴 > 작업구분 > 작업분류 순으로 하위폴더 생성 (없으면 생성, 있으면 기존 사용)
+        var menuFolder=sanitizeFolderName((p.info&&p.info.menu)||"시공");
+        var wtFolder=sanitizeFolderName(workTypeFolderName(p.info&&p.info.wt));
+        var catFolder=sanitizeFolderName(p.info&&p.info.cat);
+        var menuDir=await dirHandle.getDirectoryHandle(menuFolder,{create:true});
+        var wtDir=await menuDir.getDirectoryHandle(wtFolder,{create:true});
+        var catDir=await wtDir.getDirectoryHandle(catFolder,{create:true});
+        var fh=await catDir.getFileHandle(p.filename,{create:true});
+        var w=await fh.createWritable();
+        await w.write(new Uint8Array(ab));
+        await w.close();
+        cnt++;
+      }catch(e){
+        lastErr=e.message||String(e);
+        console.error('파일저장실패',p.filename,e);
+      }
+    }
+    if(cnt>0){showT('📁 '+dirHandle.name+'에 '+cnt+'장 저장 완료!');setTimeout(function(){finishSend(photos);},2000);}
+    else{showTE('폴더 저장 실패: '+lastErr);downloadAll(photos);setTimeout(function(){finishSend(photos);},photos.length*300+2000);}
+  } else {
+    downloadAll(photos);
+    setTimeout(function(){finishSend(photos);},photos.length*300+2000);
+  }
+}
+
+// 전송(및 기기 저장)까지 끝난 사진만 로컬 보관(IndexedDB)에서 정리.
+// 실패해서 savedPhotos에 남아있는 사진은 건드리지 않음(다음 전송 때 재시도).
+function finishSend(photos){
+  photos.forEach(function(p){
+    if(p&&p.dbId!=null) dbDeletePhoto(p.dbId).catch(function(e){console.error("사진 삭제 실패",e);});
+  });
+  if(!savedPhotos.length){
+    lockedInfo=null;
+    document.getElementById('fileInput').value='';
+    document.getElementById('inTag').value='';
+    document.getElementById('inNote').value='';
+    document.getElementById('wtNew').checked=true;
+    togglePhaseSelect();
+    if(customAreas.length)document.getElementById('inLoc').value=customAreas[0];
+    resetCam();
+  }
+  updateList();
+}
+
+function downloadAll(photos){
+  photos.forEach(function(p, i){
+    setTimeout(function(){
+      var a=document.createElement('a');
+      a.href=p.dataUrl; a.download=p.filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }, i*300);
+  });
+}
+
+// ── 앱 로직 ───────────────────────────────────────────
+var CC={
+  'DCS Panel':"#E67E22",'LCP':"#E74C3C",'Junction Box':"#F39C12",'Field Instrument':"#2980B9",'Cable Duct':"#16A085",
+  'Cable Tray':"#8E44AD",'Conduit Pipe':"#C0392B",'Air Pipe':"#27AE60",'Hook Up':"#2E86AB",
+  'Stanchion':"#5D6D7E",'Support':"#A569BD",'Connection':"#E74C3C",'Line Check':"#1ABC9C",
+  'Loop Test':"#3498DB",'Leak Test':"#1A6B72",'Instrument Calibration':"#D35400",'Steam Tracing Tube':"#C0392B",'Steam Tracing Insulation':"#922B21",
+  'Scaffolding':"#7F8C8D",'Others':"#95A5A6",'관리자':"#34495E"
+};
+
+// ── 상위 메뉴 (시공/품질/자재/안전/화기유도) + 메뉴별 작업 분류 ─
+var MENUS=["시공","품질","자재","안전","화기/유도"];
+var MENU_THEMES={
+  "시공":["#1E3A5F","#2E5F9E"],
+  "품질":["#145A32","#27AE60"],
+  "자재":["#5C3A1E","#A0703A"],
+  "안전":["#7A4A00","#F39C12"],
+  "화기/유도":["#7B241C","#C0392B"]
+};
+function applyMenuTheme(menu){
+  var t=MENU_THEMES[menu]||MENU_THEMES["시공"];
+  document.documentElement.style.setProperty("--brand-1",t[0]);
+  document.documentElement.style.setProperty("--brand-2",t[1]);
+  var tc=document.querySelector('meta[name="theme-color"]');
+  if(tc) tc.setAttribute("content",t[0]);
+}
+var DEFAULT_CATS_시공=["DCS Panel","LCP","Junction Box","Field Instrument","Cable Duct","Cable Tray",
+  "Conduit Pipe","Air Pipe","Hook Up","Stanchion","Support","Connection","Line Check","Loop Test",
+  "Leak Test","Instrument Calibration","Steam Tracing Tube","Steam Tracing Insulation","Scaffolding","Others","관리자"];
+var DEFAULT_CATS_안전=["개인보호구","안전난간","소화기","전기안전","고소작업","위험물보관","비상통로","중장비안전","밀폐공간","낙하물방지","기타"];
+var DEFAULT_CATS_화기유도=["용접작업","절단작업","화재감시","가연물제거","방화포","가스누출점검","소화기배치","유도원배치","차량유도","작업구간통제","기타"];
+var DEFAULT_CATS_BY_MENU={"시공":DEFAULT_CATS_시공,"자재":DEFAULT_CATS_시공,"안전":DEFAULT_CATS_안전,"품질":DEFAULT_CATS_시공,"화기/유도":DEFAULT_CATS_화기유도};
+var DEFAULT_AREAS=["SCC","U&O"];
+function loadList(key,def){
+  try{
+    var v=JSON.parse(localStorage.getItem(key));
+    return (Array.isArray(v)&&v.length)?v:def.slice();
+  }catch(e){ return def.slice(); }
+}
+function saveList(key,list){ localStorage.setItem(key,JSON.stringify(list)); }
+
+// 예전 세션에 저장된 안전/화기유도 placeholder 기본값이 남아있으면 새 기본값으로 1회 승격
+function fixStaleCategoryDefaults(map){
+  var changed=false;
+  if(map&&JSON.stringify(map["안전"])===JSON.stringify(["기타"])){
+    map["안전"]=DEFAULT_CATS_BY_MENU["안전"].slice(); changed=true;
+  }
+  if(map&&JSON.stringify(map["화기/유도"])===JSON.stringify(DEFAULT_CATS_시공)){
+    map["화기/유도"]=DEFAULT_CATS_BY_MENU["화기/유도"].slice(); changed=true;
+  }
+  if(map&&JSON.stringify(map["자재"])===JSON.stringify(["기타"])){
+    map["자재"]=DEFAULT_CATS_BY_MENU["자재"].slice(); changed=true;
+  }
+  return changed;
+}
+function loadCatsByMenu(){
+  try{
+    var v=JSON.parse(localStorage.getItem("custom_categories_by_menu"));
+    if(v&&typeof v==="object"){
+      MENUS.forEach(function(m){ if(!Array.isArray(v[m])||!v[m].length) v[m]=DEFAULT_CATS_BY_MENU[m].slice(); });
+      fixStaleCategoryDefaults(v);
+      return v;
+    }
+  }catch(e){}
+  // 메뉴 구분이 없던 이전 버전의 custom_categories가 있으면 "시공" 목록으로 이어받음
+  var legacy=loadList("custom_categories",DEFAULT_CATS_BY_MENU["시공"]);
+  var obj={};
+  MENUS.forEach(function(m){ obj[m]=(m==="시공")?legacy:DEFAULT_CATS_BY_MENU[m].slice(); });
+  return obj;
+}
+function saveCatsByMenu(){ localStorage.setItem("custom_categories_by_menu",JSON.stringify(catsByMenu)); }
+
+var catsByMenu=loadCatsByMenu();
+var activeMenu=(MENUS.indexOf(localStorage.getItem("active_menu"))!==-1)?localStorage.getItem("active_menu"):"시공";
+var customCats=catsByMenu[activeMenu];
+var customAreas=loadList("custom_areas",DEFAULT_AREAS);
+saveCatsByMenu();
+
+var LABELS_BY_MENU={
+  "시공":{modPhases:["변경전","변경후"],newPhases:["진행중","완료"]},
+  "품질":{tagPh:"검사번호",modPhases:["변경전","변경후"]},
+  "자재":{tag:"검수번호/Packing NO.",tagPh:"검수번호",cat:"자재품명",workType:"자재구분",wtNew:"도급",wtMod:"사급",loc:"자재보관장소"},
+  "안전":{tag:"사진제목",tagPh:"사진제목",cat:"사진내용",workType:"현장안전점검",wtNew:"현장안전점검",wtMod:"안전용품",loc:"장소"},
+  "화기/유도":{tag:"화기/유도원 이름",tagPh:"이름",wtNew:"화기감시자",wtMod:"유도원"}
+};
+// radioValue(신규/수정 라디오의 실제 value)에 해당하는 하위 단계 목록을 반환 (없으면 null)
+function wtPhasesFor(radioValue, d){
+  var newVal=(d&&d.wtNew)||"신규", modVal=(d&&d.wtMod)||"수정";
+  if(radioValue===newVal) return (d&&d.newPhases)||null;
+  if(radioValue===modVal) return (d&&d.modPhases)||null;
+  return null;
+}
+function applyMenuLabels(menu){
+  var d=LABELS_BY_MENU[menu]||{};
+  document.getElementById("lblTag").textContent=d.tag||"기기번호";
+  document.getElementById("inTag").placeholder=d.tagPh||"PT-2101, EQ-001 등";
+  document.getElementById("lblCat").textContent=d.cat||"작업 분류";
+  document.getElementById("lblWorkType").textContent=d.workType||"작업 구분";
+  document.getElementById("wtNewLabel").textContent=d.wtNew||"신규";
+  document.getElementById("wtModLabel").textContent=d.wtMod||"수정";
+  document.getElementById("lblLoc").textContent=d.loc||"작업 구역";
+  document.getElementById("wtNew").value=d.wtNew||"신규";
+  document.getElementById("wtMod").value=d.wtMod||"수정";
+}
+function setActiveMenu(menu){
+  if(MENUS.indexOf(menu)===-1)return;
+  activeMenu=menu;
+  customCats=catsByMenu[activeMenu];
+  localStorage.setItem("active_menu",menu);
+  document.querySelectorAll(".menu-tab").forEach(function(btn){
+    btn.classList.toggle("active",btn.getAttribute("data-menu")===menu);
+  });
+  applyMenuLabels(activeMenu);
+  applyMenuTheme(activeMenu);
+  togglePhaseSelect();
+  populateCatSelect();
+}
+document.querySelectorAll(".menu-tab").forEach(function(btn){
+  btn.classList.toggle("active",btn.getAttribute("data-menu")===activeMenu);
+});
+applyMenuLabels(activeMenu);
+applyMenuTheme(activeMenu);
+togglePhaseSelect();
+
+function optionHtml(v){
+  var esc=String(v).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+  return '<option value="'+esc+'">'+esc+'</option>';
+}
+function populateCatSelect(preserve){
+  var el=document.getElementById("inCat");
+  var prev=preserve?el.value:(localStorage.getItem("last_category")||localStorage.getItem("member_category"));
+  el.innerHTML=customCats.map(optionHtml).join('');
+  if(prev&&customCats.indexOf(prev)!==-1) el.value=prev;
+  updCat();
+}
+function populateAreaSelect(preserve){
+  var el=document.getElementById("inLoc");
+  var prev=preserve?el.value:null;
+  el.innerHTML=customAreas.map(optionHtml).join('');
+  if(prev&&customAreas.indexOf(prev)!==-1) el.value=prev;
+}
+
+var tempCats=null, tempAreas=null;
+function openSettings(){
+  var lbl=document.getElementById("catSectionTitle");
+  var d=LABELS_BY_MENU[activeMenu]||{};
+  if(lbl) lbl.textContent=(d.cat||"작업 분류")+" 관리 ("+activeMenu+")";
+  tempCats=customCats.slice();
+  tempAreas=customAreas.slice();
+  renderCatChips();
+  renderAreaChips();
+  document.getElementById("settingsOverlay").style.display="flex";
+}
+function closeSettings(){
+  tempCats=null; tempAreas=null;
+  document.getElementById("settingsOverlay").style.display="none";
+}
+async function pushSettingsToSupabase(){
+  if(!sbClient)return;
+  try{
+    var res=await sbClient.from('app_settings').upsert({
+      id:'global',
+      cats_by_menu:catsByMenu,
+      areas:customAreas,
+      updated_at:new Date().toISOString()
+    });
+    if(res.error) console.error("설정 클라우드 동기화 실패",res.error.message);
+  }catch(e){console.error("설정 클라우드 동기화 실패",e);}
+}
+
+// 원격(갤러리 등)에서 받아온 설정 반영 — 로컬 저장만 하고 다시 업로드하지 않음(무한루프 방지)
+function applyRemoteSettings(data){
+  var changed=false;
+  if(data.cats_by_menu){
+    MENUS.forEach(function(m){
+      if(Array.isArray(data.cats_by_menu[m])&&data.cats_by_menu[m].length){
+        catsByMenu[m]=data.cats_by_menu[m];
+        changed=true;
+      }
+    });
+  }
+  if(Array.isArray(data.areas)&&data.areas.length){ customAreas=data.areas; changed=true; }
+  var fixedStale=fixStaleCategoryDefaults(catsByMenu);
+  if(changed||fixedStale){
+    customCats=catsByMenu[activeMenu];
+    saveCatsByMenu();
+    saveList("custom_areas",customAreas);
+    populateCatSelect(true);
+    populateAreaSelect(true);
+    if(fixedStale) pushSettingsToSupabase();
+  }
+}
+async function fetchSettingsFromSupabase(){
+  if(!sbClient)return;
+  try{
+    var res=await sbClient.from('app_settings').select('*').eq('id','global').single();
+    if(res.error||!res.data)return;
+    applyRemoteSettings(res.data);
+  }catch(e){console.error("설정 클라우드 불러오기 실패",e);}
+}
+function subscribeSettingsRealtime(){
+  if(!sbClient||!sbClient.channel)return;
+  sbClient.channel('app_settings_changes_manage')
+    .on('postgres_changes',{event:'*',schema:'public',table:'app_settings',filter:'id=eq.global'},function(payload){
+      if(payload.new) applyRemoteSettings(payload.new);
+    })
+    .subscribe();
+}
+
+function saveSettingsChanges(){
+  if(!tempCats||!tempAreas)return;
+  catsByMenu[activeMenu]=tempCats;
+  customCats=tempCats;
+  saveCatsByMenu();
+  customAreas=tempAreas;
+  saveList("custom_areas",customAreas);
+  populateCatSelect(true);
+  populateAreaSelect(true);
+  tempCats=null; tempAreas=null;
+  document.getElementById("settingsOverlay").style.display="none";
+  showT("설정이 저장되었습니다");
+  pushSettingsToSupabase();
+}
+function renderCatChips(){
+  document.getElementById("catChips").innerHTML=tempCats.map(function(c,i){
+    return '<span class="chip">'+c+'<button onclick="removeCategory('+i+')" title="삭제">&#10005;</button></span>';
+  }).join('');
+}
+function addCategory(){
+  var inp=document.getElementById("newCatInput");
+  var v=inp.value.trim();
+  if(!v||tempCats.indexOf(v)!==-1)return;
+  tempCats.push(v);
+  inp.value="";
+  renderCatChips();
+}
+function removeCategory(i){
+  if(tempCats.length<=1)return;
+  tempCats.splice(i,1);
+  renderCatChips();
+}
+function renderAreaChips(){
+  document.getElementById("areaChips").innerHTML=tempAreas.map(function(a,i){
+    return '<span class="chip">'+a+'<button onclick="removeArea('+i+')" title="삭제">&#10005;</button></span>';
+  }).join('');
+}
+function addArea(){
+  var inp=document.getElementById("newAreaInput");
+  var v=inp.value.trim();
+  if(!v||tempAreas.indexOf(v)!==-1)return;
+  tempAreas.push(v);
+  inp.value="";
+  renderAreaChips();
+}
+function removeArea(i){
+  if(tempAreas.length<=1)return;
+  tempAreas.splice(i,1);
+  renderAreaChips();
+}
+
+var savedPhotos=[], lockedInfo=null;
+
+// ── 미전송 사진 보존 (IndexedDB) ───────────────────────
+var DB_NAME="work-photo-db", DB_VERSION=2, STORE_NAME="photos", SETTINGS_STORE="settings", dbPromise=null;
+function openDB(){
+  if(dbPromise)return dbPromise;
+  dbPromise=new Promise(function(resolve,reject){
+    var req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=function(){
+      var db=req.result;
+      if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME,{keyPath:"id",autoIncrement:true});
+      if(!db.objectStoreNames.contains(SETTINGS_STORE)) db.createObjectStore(SETTINGS_STORE,{keyPath:"key"});
+    };
+    req.onsuccess=function(){resolve(req.result);};
+    req.onerror=function(){reject(req.error);};
+  });
+  return dbPromise;
+}
+
+// 저장 폴더 핸들 기억 — 한 번 지정하면 새로고침 후에도 다시 묻지 않음
+async function persistFolderHandle(handle){
+  try{
+    var db=await openDB();
+    var tx=db.transaction(SETTINGS_STORE,'readwrite');
+    tx.objectStore(SETTINGS_STORE).put({key:'folderHandle',value:handle});
+  }catch(e){ console.warn('폴더 정보 저장 실패',e); }
+}
+async function loadSavedFolderHandle(){
+  if(isMobile || !window.showDirectoryPicker) return;
+  try{
+    var db=await openDB();
+    var rec=await new Promise(function(resolve){
+      var tx=db.transaction(SETTINGS_STORE,'readonly');
+      var req=tx.objectStore(SETTINGS_STORE).get('folderHandle');
+      req.onsuccess=function(){resolve(req.result);};
+      req.onerror=function(){resolve(null);};
+    });
+    if(rec && rec.value){
+      dirHandle=rec.value;
+      document.getElementById('folderBtn').textContent='📁 '+dirHandle.name;
+    }
+  }catch(e){ console.warn('폴더 정보 불러오기 실패',e); }
+}
+async function dbAddPhoto(p){
+  var db=await openDB();
+  return new Promise(function(resolve,reject){
+    var tx=db.transaction(STORE_NAME,"readwrite");
+    var req=tx.objectStore(STORE_NAME).add({filename:p.filename,blob:p.blob,info:p.info});
+    req.onsuccess=function(){resolve(req.result);};
+    req.onerror=function(){reject(req.error);};
+  });
+}
+async function dbDeletePhoto(id){
+  if(id==null)return;
+  var db=await openDB();
+  return new Promise(function(resolve,reject){
+    var tx=db.transaction(STORE_NAME,"readwrite");
+    tx.objectStore(STORE_NAME).delete(id);
+    tx.oncomplete=function(){resolve();};
+    tx.onerror=function(){reject(tx.error);};
+  });
+}
+async function dbClearAll(){
+  var db=await openDB();
+  return new Promise(function(resolve,reject){
+    var tx=db.transaction(STORE_NAME,"readwrite");
+    tx.objectStore(STORE_NAME).clear();
+    tx.oncomplete=function(){resolve();};
+    tx.onerror=function(){reject(tx.error);};
+  });
+}
+async function restoreSavedPhotos(){
+  try{
+    var db=await openDB();
+    var rows=await new Promise(function(resolve,reject){
+      var tx=db.transaction(STORE_NAME,"readonly");
+      var req=tx.objectStore(STORE_NAME).getAll();
+      req.onsuccess=function(){resolve(req.result);};
+      req.onerror=function(){reject(req.error);};
+    });
+    if(!rows.length)return;
+    savedPhotos=rows.map(function(r){
+      return {dataUrl:URL.createObjectURL(r.blob),filename:r.filename,blob:r.blob,info:r.info,dbId:r.id};
+    });
+    updateList();
+    showT("미전송 사진 "+savedPhotos.length+"장 복원됨");
+  }catch(e){console.error("사진 복원 실패",e);}
+}
+restoreSavedPhotos();
+loadSavedFolderHandle();
+
+populateAreaSelect();
+populateCatSelect();
+fetchSettingsFromSupabase();
+subscribeSettingsRealtime();
+
+document.getElementById("camBox").addEventListener("click",openCamera);
+document.getElementById("fileInput").addEventListener("change",loadImg);
+document.getElementById("galleryFileInput").addEventListener("change",loadImgsFromGallery);
+
+// ── 후면 카메라 실시간 촬영 (비율 선택 가능) ───────────
+var camStream=null,camTrack=null;
+var RATIO_VALUES={"6:7":6/7,"16:9":16/9};
+var RATIO_BTN_IDS={"6:7":"ratioBtn67","16:9":"ratioBtn169"};
+function normRatioMode(mode){return RATIO_VALUES.hasOwnProperty(mode)?mode:"6:7";}
+var captureRatio=RATIO_VALUES[normRatioMode(localStorage.getItem("capture_ratio"))];
+function setCaptureRatio(mode){
+  mode=normRatioMode(mode);
+  captureRatio=RATIO_VALUES[mode];
+  localStorage.setItem("capture_ratio",mode);
+  Object.keys(RATIO_BTN_IDS).forEach(function(m){
+    document.getElementById(RATIO_BTN_IDS[m]).classList.toggle("active",m===mode);
+  });
+  if(document.getElementById("camModal").style.display==="flex")sizeCamViewport();
+}
+(function(){
+  var mode=normRatioMode(localStorage.getItem("capture_ratio"));
+  Object.keys(RATIO_BTN_IDS).forEach(function(m){
+    document.getElementById(RATIO_BTN_IDS[m]).classList.toggle("active",m===mode);
+  });
+})();
+function sizeCamViewport(){
+  var vw=window.innerWidth,vh=window.innerHeight;
+  var w,h;
+  if(vw/vh>captureRatio){h=vh;w=Math.round(h*captureRatio);}
+  else{w=vw;h=Math.round(w/captureRatio);}
+  var vp=document.getElementById("camViewport");
+  vp.style.width=w+"px";
+  vp.style.height=h+"px";
+}
+window.addEventListener("resize",function(){
+  if(document.getElementById("camModal").style.display==="flex")sizeCamViewport();
+});
+window.addEventListener("orientationchange",function(){
+  setTimeout(function(){
+    if(document.getElementById("camModal").style.display==="flex")sizeCamViewport();
+  },250);
+});
+async function openCamera(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    document.getElementById("fileInput").click();
+    return;
+  }
+  var stream=null;
+  var videoConstraints={facingMode:{exact:"environment"},aspectRatio:{ideal:captureRatio},width:{ideal:1920},height:{ideal:1920}};
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:videoConstraints,audio:false});
+  }catch(e1){
+    try{
+      videoConstraints.facingMode="environment";
+      stream=await navigator.mediaDevices.getUserMedia({video:videoConstraints,audio:false});
+    }catch(e2){
+      try{
+        stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+      }catch(e3){
+        document.getElementById("fileInput").click();
+        return;
+      }
+    }
+  }
+  camStream=stream;
+  camTrack=stream.getVideoTracks()[0]||null;
+  document.getElementById("camVideo").srcObject=stream;
+  document.getElementById("camRatioBadge").textContent=normRatioMode(localStorage.getItem("capture_ratio"));
+  sizeCamViewport();
+  setupZoom();
+  document.getElementById("camModal").style.display="flex";
+}
+function closeCamera(){
+  if(camStream){camStream.getTracks().forEach(function(t){t.stop();});camStream=null;camTrack=null;}
+  document.getElementById("camModal").style.display="none";
+  document.getElementById("camVideo").style.transform="scale(1)";
+}
+
+// ── 카메라 줌 ──────────────────────────────────────────
+var zoomLevel=1, digitalZoom=true;
+function setupZoom(){
+  zoomLevel=1;
+  digitalZoom=true;
+  document.getElementById("camVideo").style.transform="scale(1)";
+  var slider=document.getElementById("camZoomSlider");
+  slider.min=1;slider.max=3;slider.step=0.1;slider.value=1;
+  document.getElementById("camZoomLabel").textContent="1.0x";
+  try{
+    var caps=camTrack&&camTrack.getCapabilities?camTrack.getCapabilities():null;
+    if(caps&&caps.zoom){
+      digitalZoom=false;
+      slider.min=caps.zoom.min;
+      slider.max=caps.zoom.max;
+      slider.step=caps.zoom.step||0.1;
+      var cur=(camTrack.getSettings&&camTrack.getSettings().zoom)||caps.zoom.min;
+      slider.value=cur;
+      zoomLevel=parseFloat(cur);
+      document.getElementById("camZoomLabel").textContent=zoomLevel.toFixed(1)+"x";
+    }
+  }catch(e){}
+}
+function applyZoom(newZoom){
+  var slider=document.getElementById("camZoomSlider");
+  var min=parseFloat(slider.min),max=parseFloat(slider.max);
+  zoomLevel=Math.min(max,Math.max(min,newZoom));
+  slider.value=zoomLevel;
+  document.getElementById("camZoomLabel").textContent=zoomLevel.toFixed(1)+"x";
+  if(digitalZoom){
+    document.getElementById("camVideo").style.transform="scale("+zoomLevel+")";
+  }else if(camTrack){
+    camTrack.applyConstraints({advanced:[{zoom:zoomLevel}]}).catch(function(e){console.error("줌 적용 실패",e);});
+  }
+}
+document.getElementById("camZoomSlider").addEventListener("input",function(){
+  applyZoom(parseFloat(this.value));
+});
+
+// ── 핀치 줌 (터치 제스처) ────────────────────────────────
+var pinchStartDist=null, pinchStartZoom=1;
+function touchDist(touches){
+  var dx=touches[0].clientX-touches[1].clientX;
+  var dy=touches[0].clientY-touches[1].clientY;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+(function(){
+  var vp=document.getElementById("camViewport");
+  vp.addEventListener("touchstart",function(e){
+    if(e.touches.length===2){
+      pinchStartDist=touchDist(e.touches);
+      pinchStartZoom=zoomLevel;
+      e.preventDefault();
+    }
+  },{passive:false});
+  vp.addEventListener("touchmove",function(e){
+    if(e.touches.length===2&&pinchStartDist){
+      e.preventDefault();
+      var dist=touchDist(e.touches);
+      applyZoom(pinchStartZoom*(dist/pinchStartDist));
+    }
+  },{passive:false});
+  vp.addEventListener("touchend",function(e){
+    if(e.touches.length<2)pinchStartDist=null;
+  });
+  vp.addEventListener("touchcancel",function(){pinchStartDist=null;});
+})();
+function applyDigitalZoom(source,zoom){
+  if(zoom<=1)return source;
+  var sw=source.width,sh=source.height;
+  var cw=sw/zoom,ch=sh/zoom;
+  var ox=(sw-cw)/2,oy=(sh-ch)/2;
+  var cv=document.createElement("canvas");
+  cv.width=sw;cv.height=sh;
+  cv.getContext("2d").drawImage(source,ox,oy,cw,ch,0,0,sw,sh);
+  return cv;
+}
+function playShutterSound(){
+  try{
+    var ctx=new (window.AudioContext||window.webkitAudioContext)();
+    var o=ctx.createOscillator(),g=ctx.createGain();
+    o.type="square";
+    o.frequency.setValueAtTime(1200,ctx.currentTime);
+    g.gain.setValueAtTime(0.35,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.09);
+    o.connect(g);g.connect(ctx.destination);
+    o.start();
+    o.stop(ctx.currentTime+0.09);
+    o.onended=function(){ctx.close();};
+  }catch(e){}
+}
+async function captureShot(){
+  var video=document.getElementById("camVideo");
+  if(!video.videoWidth)return;
+  playShutterSound();
+  var cv=null;
+  if(window.ImageCapture&&camTrack){
+    try{
+      var imageCapture=new ImageCapture(camTrack);
+      var blob=await imageCapture.takePhoto();
+      var bitmap=await createImageBitmap(blob);
+      cv=document.createElement("canvas");
+      cv.width=bitmap.width;cv.height=bitmap.height;
+      cv.getContext("2d").drawImage(bitmap,0,0);
+    }catch(e){console.error("고화질 촬영 실패, 미리보기 프레임으로 대체",e);cv=null;}
+  }
+  if(!cv){
+    cv=document.createElement("canvas");
+    cv.width=video.videoWidth;cv.height=video.videoHeight;
+    cv.getContext("2d").drawImage(video,0,0,cv.width,cv.height);
+  }
+  if(digitalZoom&&zoomLevel>1) cv=applyDigitalZoom(cv,zoomLevel);
+  closeCamera();
+  var now=new Date();
+  processCapturedFrame(cv,now.toISOString().slice(0,10),now.toTimeString().slice(0,5));
+}
+document.getElementById("inCat").addEventListener("change",updCat);
+
+function updCat(){
+  var v=document.getElementById("inCat").value;
+  document.getElementById("catBar").style.background=CC[v]||"#7F8C8D";
+  localStorage.setItem("last_category",v);
+}
+
+document.getElementById("inTag").addEventListener("blur",checkTagDuplicate);
+
+async function checkTagDuplicate(){
+  var tagEl=document.getElementById("inTag");
+  var tag=(tagEl.value||"").trim();
+  var cat=document.getElementById("inCat").value;
+  if(!tag||!cat||!sbClient)return;
+  try{
+    var res=await sbClient.from('work_photos').select('id').eq('cat',cat).eq('tag',tag).limit(1);
+    if(res.error){console.error('중복 확인 실패',res.error);return;}
+    if(res.data&&res.data.length){
+      var keep=confirm('['+cat+'] 분류에 이미 등록된 TAG NO입니다: '+tag+'\n그래도 저장하시겠습니까?');
+      if(!keep){tagEl.value='';tagEl.focus();}
+    }
+  }catch(e){console.error('중복 확인 실패',e);}
+}
+
+function getWorkLabel(){
+  var wt=document.querySelector('input[name="workType"]:checked');
+  var v=wt?wt.value:'신규';
+  var d=LABELS_BY_MENU[activeMenu];
+  var phases=wtPhasesFor(v,d);
+  if(phases) return document.getElementById('inPhase').value||phases[0];
+  return v;
+}
+function togglePhaseSelect(){
+  var checked=document.querySelector('input[name="workType"]:checked');
+  var d=LABELS_BY_MENU[activeMenu];
+  var phases=checked?wtPhasesFor(checked.value,d):null;
+  var sel=document.getElementById('inPhase');
+  if(phases){
+    sel.innerHTML=phases.map(optionHtml).join('');
+    sel.style.display='';
+  }else{
+    sel.style.display='none';
+  }
+}
+document.querySelectorAll('input[name="workType"]').forEach(function(r){
+  r.addEventListener('change',togglePhaseSelect);
+});
+
+var CROP_TARGET_W=1600;
+function crop34(img){
+  var sW=img.width,sH=img.height,r=captureRatio,cW,cH,ox=0,oy=0;
+  if(sW/sH>r){cH=sH;cW=Math.round(sH*r);ox=Math.round((sW-cW)/2);}
+  else{cW=sW;cH=Math.round(sW/r);oy=Math.round((sH-cH)/2);}
+  var outW=CROP_TARGET_W,outH=Math.round(outW/r);
+  var c=document.createElement("canvas");
+  c.width=outW;c.height=outH;c._w=outW;c._h=outH;
+  c.getContext("2d").drawImage(img,ox,oy,cW,cH,0,0,outW,outH);
+  return c;
+}
+
+function loadImg(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var autoDate="",autoTime="";
+    try{
+      var exifObj=piexif.load(ev.target.result);
+      var dt=exifObj["Exif"]&&exifObj["Exif"][piexif.ExifIFD.DateTimeOriginal];
+      if(dt&&dt.length>=16){
+        autoDate=dt.slice(0,10).replace(/:/g,"-");
+        autoTime=dt.slice(11,16);
+      }
+    }catch(ex){}
+    if(!autoDate){
+      var now=new Date();
+      autoDate=now.toISOString().slice(0,10);
+      autoTime=now.toTimeString().slice(0,5);
+    }
+    var img=new Image();
+    img.onload=function(){processCapturedFrame(img,autoDate,autoTime);};
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value="";
+}
+
+// 휴대폰 사진첩에 이미 저장돼 있는 사진을 여러 장 골라 한 번에 추가한다. 파일마다
+// EXIF 촬영일시를 읽어 processGalleryFrame으로 넘기며, 분류는 비운 채 원본 그대로
+// savedPhotos 목록에 쌓인다. 순서를 지키기 위해 파일을 하나씩 순차 처리한다.
+function loadOneGalleryFile(file){
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      var autoDate="",autoTime="";
+      try{
+        var exifObj=piexif.load(ev.target.result);
+        var dt=exifObj["Exif"]&&exifObj["Exif"][piexif.ExifIFD.DateTimeOriginal];
+        if(dt&&dt.length>=16){
+          autoDate=dt.slice(0,10).replace(/:/g,"-");
+          autoTime=dt.slice(11,16);
+        }
+      }catch(ex){}
+      if(!autoDate){
+        var now=new Date();
+        autoDate=now.toISOString().slice(0,10);
+        autoTime=now.toTimeString().slice(0,5);
+      }
+      // OCR을 안 하므로 화면 표시용 Image 로딩 없이 바로 처리 — 그만큼 더 빠르다
+      processGalleryFrame(file,ev.target.result,autoDate,autoTime).then(resolve).catch(resolve);
+    };
+    reader.onerror=function(){resolve();};
+    reader.readAsDataURL(file);
+  });
+}
+
+async function loadImgsFromGallery(e){
+  var files=Array.prototype.slice.call(e.target.files||[]);
+  e.target.value="";
+  if(!files.length) return;
+  var btn=document.getElementById("galleryPickBtn");
+  var origText=btn?btn.textContent:"";
+  for(var i=0;i<files.length;i++){
+    if(btn) btn.textContent="🖼 "+(i+1)+"/"+files.length+" 인식 중...";
+    await loadOneGalleryFile(files[i]);
+  }
+  if(btn) btn.textContent=origText;
+}
+
+function currentFormInfo(autoDate,autoTime){
+  var catEl=document.getElementById("inCat");
+  return {
+    date:autoDate, time:autoTime,
+    tag:document.getElementById("inTag").value.trim(),
+    cat:catEl.options[catEl.selectedIndex].text,
+    loc:document.getElementById("inLoc").value,
+    note:document.getElementById("inNote").value.trim(),
+    wt:getWorkLabel(),
+    menu:activeMenu
+  };
+}
+
+function applyCapturedInfoAndAdd(source, info){
+  var loadedImg=crop34(source);
+  lockedInfo=info;
+  // 캠박스에 촬영된 이미지 표시
+  document.getElementById("camBox").innerHTML=
+    '<img src="'+loadedImg.toDataURL()+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"/>'
+    +'<div class="corner tl"></div><div class="corner tr"></div>'
+    +'<div class="corner bl"></div><div class="corner br"></div>';
+
+  // 바로 목록에 추가
+  autoAddPhoto(loadedImg);
+}
+
+function processCapturedFrame(source,autoDate,autoTime){
+  applyCapturedInfoAndAdd(source, currentFormInfo(autoDate,autoTime));
+}
+
+// 갤러리에서 고른 사진은 크롭/워터마크 재생성 없이 원본 그대로 목록에 추가한다
+// (파일명·사진 내용·기존 워터마크를 전혀 건드리지 않고 그대로 전송하기 위함).
+// 분류 정보(info)만 OCR로 읽어 DB 메타데이터로 함께 올린다.
+async function addOriginalGalleryPhoto(file, rawDataUrl, info){
+  // source:'gallery' — 전송 후 기기 저장(autoSaveToDevice) 단계에서 원본이 이미 폰에
+  // 있는 사진은 건너뛰기 위한 표시.
+  var photo={dataUrl:rawDataUrl, filename:file.name, blob:file, info:info, source:'gallery'};
+  savedPhotos.push(photo);
+  document.getElementById("camBox").innerHTML=
+    '<img src="'+rawDataUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"/>'
+    +'<div class="corner tl"></div><div class="corner tr"></div>'
+    +'<div class="corner bl"></div><div class="corner br"></div>';
+  updateList();
+  showT("추가 완료! 총 "+savedPhotos.length+"장");
+  // dbId가 채워지기 전에 전송 버튼을 누르면 finishSend()가 임시 백업을 못 지우고 남기게
+  // 되므로, 여기서 끝까지 기다려 dbId를 확실히 채워둔다.
+  try{ photo.dbId=await dbAddPhoto(photo); }catch(e){ console.error("사진 저장 실패",e); }
+}
+
+// 갤러리에서 고른 사진은 모바일에서 워터마크 인식(OCR)을 하지 않는다 — 사진 한 장당
+// 몇 초씩 걸려 여러 장 고르면 매우 느려지기 때문. 분류(기기번호/작업분류/작업구역/특이사항)는
+// 비워서 올리고, PC의 갤러리 앱 "자동 분류" 기능이 나중에 OCR로 채운다. (사진마다 분류가
+// 다를 수 있어 화면의 현재 선택값을 일괄 적용하는 방식은 쓸 수 없음 — 2026-07-14 되돌림)
+async function processGalleryFrame(file,rawDataUrl,autoDate,autoTime){
+  var info={
+    date:autoDate, time:autoTime,
+    tag:"", cat:"", loc:"", note:"", wt:"",
+    menu:activeMenu
+  };
+  // 파일명/사진 내용/워터마크는 그대로 두고, 분류는 비운 채로 목록에 추가한다
+  await addOriginalGalleryPhoto(file, rawDataUrl, info);
+}
+
+function renderCanvas(loadedImg){
+  var cv=document.createElement("canvas");
+  var W=loadedImg._w,H=loadedImg._h;
+  cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d");
+  ctx.drawImage(loadedImg,0,0);
+
+  var menuNewLabel=(LABELS_BY_MENU[lockedInfo.menu]&&LABELS_BY_MENU[lockedInfo.menu].wtNew)||"신규";
+  var label=lockedInfo.wt===menuNewLabel?lockedInfo.cat:"["+lockedInfo.wt+"] "+lockedInfo.cat;
+  var memberName=localStorage.getItem("member_name")||"";
+  var lines=[label, lockedInfo.tag||"-", lockedInfo.loc];
+  if(memberName) lines.push(memberName);
+  lines.push(lockedInfo.date+"  "+lockedInfo.time);
+  if(lockedInfo.note&&lockedInfo.note!=="-") lines.push(lockedInfo.note);
+
+  var fs=Math.max(20,Math.round(H*0.031));
+  var padX=Math.round(W*0.022), padY=Math.round(fs*0.55);
+  ctx.font="bold "+fs+"px Arial,sans-serif";
+  var maxTxtW=0;
+  lines.forEach(function(l){maxTxtW=Math.max(maxTxtW,ctx.measureText(l).width);});
+  while(fs>16&&maxTxtW>W*0.75){
+    fs--;ctx.font="bold "+fs+"px Arial,sans-serif";maxTxtW=0;
+    lines.forEach(function(l){maxTxtW=Math.max(maxTxtW,ctx.measureText(l).width);});
+  }
+  var lh=Math.round(fs*1.3);
+  padX=Math.round(W*0.022);padY=Math.round(fs*0.55);
+  var boxW=maxTxtW+padX*2,boxH=lines.length*lh+padY*2;
+  ctx.fillStyle="rgba(0,0,0,0.6)";
+  ctx.fillRect(W-boxW,H-boxH,boxW,boxH);
+  ctx.textBaseline="top";ctx.textAlign="right";
+  ctx.font="bold "+fs+"px Arial,sans-serif";
+  ctx.lineJoin="round";ctx.miterLimit=2;
+  ctx.lineWidth=Math.max(2,Math.round(fs*0.12));
+  ctx.strokeStyle="#000000";
+  ctx.fillStyle="#FFFFFF";
+  lines.forEach(function(line,i){
+    var x=W-padX,y=(H-boxH)+padY+i*lh;
+    ctx.strokeText(line,x,y);
+    ctx.fillText(line,x,y);
+  });
+  return cv;
+}
+
+function sanitizeForFilename(str){
+  return str?String(str).trim()
+    .replace(/[^\x00-\x7F]/g,"")
+    .replace(/[\\\/:*?"<>|&]/g,"")
+    .replace(/\s+/g,"_")
+    .replace(/^[_\-]+|[_\-]+$/g,"")
+    .slice(0,30):"";
+}
+
+// 촬영자 이름·특이사항은 한글이 대부분이라 위 sanitizeForFilename(ASCII만 허용)을 쓰면
+// 값이 통째로 사라지므로, 예약문자만 치환하고 한글은 남기는 전용 함수를 따로 둔다.
+function sanitizeForFilenameKr(str){
+  return str?String(str).trim()
+    .replace(/[\\\/:*?"<>|&]/g,"")
+    .replace(/\s+/g,"_")
+    .replace(/^[_\-]+|[_\-]+$/g,"")
+    .slice(0,30):"";
+}
+
+// 폴더명은 한글을 유지해야 하므로 sanitizeForFilename과 별도로 예약문자만 치환
+function sanitizeFolderName(name){
+  var cleaned=String(name==null?"":name).replace(/[\\/:*?"<>|]/g,"_").trim();
+  return cleaned||"Others";
+}
+// 시공/품질은 수정 선택 시 변경전/변경후로, 시공은 신규 선택 시 진행중/완료로 세분화되지만
+// 폴더는 각각 "수정"/"신규" 하나로 묶음
+function workTypeFolderName(wt){
+  if(wt==="변경전"||wt==="변경후")return "수정";
+  if(wt==="진행중"||wt==="완료")return "신규";
+  return wt||"기타";
+}
+
+var WT_EN={'신규':'new','진행중':'in-progress','완료':'done','변경전':'mod-before','변경후':'mod-after','도급':'contract','사급':'owner-supply','현장안전점검':'safety-check','안전용품':'safety-gear','화기감시자':'fire-watch','유도원':'guide'};
+
+function buildFileName(idx){
+  var wt=WT_EN[lockedInfo.wt]||sanitizeForFilename(lockedInfo.wt)||'work';
+  var cat=sanitizeForFilename(lockedInfo.cat)||'etc';
+  var tag=sanitizeForFilename(lockedInfo.tag)||'NONAME';
+  var loc=sanitizeForFilename(lockedInfo.loc)||'LOC';
+  var name=sanitizeForFilenameKr(localStorage.getItem("member_name")||"");
+  var note=sanitizeForFilenameKr(lockedInfo.note);
+  var parts=["WORK",
+    (lockedInfo.date||"").replace(/-/g,""),
+    (lockedInfo.time||"").replace(":",""),
+    wt, cat, tag, loc];
+  if(name) parts.push(name);
+  if(note) parts.push(note);
+  parts.push(idx);
+  var fname=parts.join("_")+".jpg";
+  return fname.length>200?fname.slice(0,196)+".jpg":fname;
+}
+
+function buildInfoText(info){
+  return "["+info.wt+"] "+info.cat+"  기기번호:"+info.tag
+    +"  날짜:"+info.date+" "+info.time+"  구역:"+info.loc+"  특이사항:"+info.note;
+}
+function strToXPBytes(str){
+  var bytes=[],s=String(str||"");
+  for(var i=0;i<s.length;i++){var c=s.charCodeAt(i);bytes.push(c&0xff,(c>>8)&0xff);}
+  bytes.push(0,0);return bytes;
+}
+function strToUserCommentBinary(str){
+  var bin="",s=String(str||"");
+  for(var i=0;i<s.length;i++){var c=s.charCodeAt(i);bin+=String.fromCharCode(c&0xff)+String.fromCharCode((c>>8)&0xff);}
+  return "UNICODE "+bin;
+}
+function embedExif(dataUrl,info){
+  try{
+    if(typeof piexif==="undefined")return dataUrl;
+    var ft=buildInfoText(info);
+    var z={};
+    z[piexif.ImageIFD.XPTitle]=strToXPBytes(info.tag);
+    z[piexif.ImageIFD.XPSubject]=strToXPBytes(info.cat);
+    z[piexif.ImageIFD.XPComment]=strToXPBytes(ft);
+    z[piexif.ImageIFD.XPKeywords]=strToXPBytes([info.wt,info.loc].join(";"));
+    var ex={};
+    ex[piexif.ExifIFD.UserComment]=strToUserCommentBinary(ft);
+    var dd=(info.date||"").replace(/-/g,":");
+    var dt=info.time||"00:00";if(dt.length===5)dt+=":00";
+    if(dd)ex[piexif.ExifIFD.DateTimeOriginal]=dd+" "+dt;
+    return piexif.insert(piexif.dump({"0th":z,"Exif":ex}),dataUrl);
+  }catch(e){return dataUrl;}
+}
+
+function autoAddPhoto(loadedImg){
+  var cv=renderCanvas(loadedImg);
+  var fname=buildFileName(savedPhotos.length+1);
+  var rawDataUrl=cv.toDataURL("image/jpeg",0.92);
+  var info={
+    date:lockedInfo.date,time:lockedInfo.time,
+    tag:lockedInfo.tag,cat:lockedInfo.cat,
+    loc:lockedInfo.loc,note:lockedInfo.note,wt:lockedInfo.wt,
+    menu:lockedInfo.menu
+  };
+  var dataUrl=embedExif(rawDataUrl,info);
+  var byteStr=atob(dataUrl.split(",")[1]);
+  var ab=new ArrayBuffer(byteStr.length);
+  var ia=new Uint8Array(ab);
+  for(var i=0;i<byteStr.length;i++)ia[i]=byteStr.charCodeAt(i);
+  var blob=new Blob([ab],{type:"image/jpeg"});
+  var photo={dataUrl:dataUrl,filename:fname,blob:blob,info:info};
+  savedPhotos.push(photo);
+  updateList();
+  showT("추가 완료! 총 "+savedPhotos.length+"장");
+  document.getElementById("inNote").value="";
+  setTimeout(resetCam,800);
+  dbAddPhoto(photo).then(function(id){photo.dbId=id;}).catch(function(e){console.error("사진 저장 실패",e);});
+}
+
+function updateList(){
+  var cnt=savedPhotos.length;
+  document.getElementById("photoCount").textContent=cnt;
+  document.getElementById("listCard").style.display=cnt>0?"block":"none";
+  var list=document.getElementById("savedList");
+  var html="";
+  savedPhotos.forEach(function(p,i){
+    html+='<div class="saved-item">'
+      +'<img src="'+p.dataUrl+'"/>'
+      +'<button class="del-btn" onclick="removePhoto('+i+')">&#10005;</button>'
+      +'<span class="num-badge">'+(i+1)+'</span>'
+      +'</div>';
+  });
+  list.innerHTML=html||'<div style="grid-column:span 4;text-align:center;padding:12px;color:#A0BBD4;font-size:13px;">촬영된 사진이 없습니다</div>';
+}
+
+window.removePhoto=function(idx){
+  var p=savedPhotos[idx];
+  savedPhotos.splice(idx,1);
+  updateList();
+  if(p&&p.dbId!=null)dbDeletePhoto(p.dbId).catch(function(e){console.error("사진 삭제 실패",e);});
+};
+
+function resetCam(){
+  lockedInfo=null;
+  document.getElementById("fileInput").value="";
+  document.getElementById("camBox").innerHTML=
+    '<div class="cam-placeholder" style="text-align:center;pointer-events:none;">'
+    +'<div class="icon">&#128247;</div>'
+    +'<p>탭하여 촬영</p>'
+    +'<p style="font-size:12px;color:#2E5F9E;margin-top:4px;font-weight:700;">저장: '+savedPhotos.length+'장</p>'
+    +'</div>'
+    +'<div class="corner tl"></div><div class="corner tr"></div>'
+    +'<div class="corner bl"></div><div class="corner br"></div>';
+}
+
+// 성공(toast)/에러(toastE) 토스트가 같은 자리에 떠서 겹치면 어느 쪽 결과인지 헷갈리므로,
+// 하나를 띄울 땐 항상 반대쪽을 먼저 숨겨서 한 번에 하나만 보이게 한다.
+function showT(m){
+  document.getElementById("toastE").style.display="none";
+  var t=document.getElementById("toast");t.textContent=m;t.style.display="block";
+  clearTimeout(t._hideTimer);
+  t._hideTimer=setTimeout(function(){t.style.display="none";},2500);
+}
+function showTE(m){
+  document.getElementById("toast").style.display="none";
+  var t=document.getElementById("toastE");t.textContent=m;t.style.display="block";
+  clearTimeout(t._hideTimer);
+  t._hideTimer=setTimeout(function(){t.style.display="none";},7000);
+}
+
+// ── 음성 인식 (STT) ──────────────────────────────────
+var SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+var activeRec=null;
+
+function startSTT(fieldId,btnId){
+  if(!SpeechRecognition){showTE("이 브라우저는 음성 인식을 지원하지 않습니다.");return;}
+  var btn=document.getElementById(btnId);
+  if(activeRec){activeRec.stop();return;}
+  var rec=new SpeechRecognition();
+  rec.lang="ko-KR";rec.interimResults=true;rec.maxAlternatives=1;
+  activeRec=rec;btn.classList.add("listening");btn.textContent="⏹";
+  rec.onresult=function(e){
+    var t="";
+    for(var i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;
+    var el=document.getElementById(fieldId);
+    el.value=fieldId==="inTag"?t.toUpperCase():t;
+    if(e.results[e.results.length-1].isFinal)showT("음성 입력 완료");
+  };
+  rec.onerror=function(e){if(e.error!=="aborted")showTE("음성 오류: "+e.error);_stopSTT(btn);};
+  rec.onend=function(){_stopSTT(btn);};
+  rec.start();
+}
+function _stopSTT(btn){activeRec=null;btn.classList.remove("listening");btn.textContent="🎤";}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw-daesun.js').then(function(reg){
+    function promptUpdate(){
+      if(document.getElementById('updateBanner'))return;
+      var b=document.createElement('div');
+      b.id='updateBanner';
+      b.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1A2332;color:#fff;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,0.35);white-space:nowrap;';
+      b.innerHTML='새 버전이 있습니다 <button id="updateBtn" style="background:#FEE500;color:#1A2332;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:800;cursor:pointer;">업데이트</button>';
+      document.body.appendChild(b);
+      document.getElementById('updateBtn').onclick=function(){
+        if(reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+      };
+    }
+    // 앱을 "새로 여는" 시점에 이미 새 버전이 대기 중이면, 배너를 누를 필요 없이 바로 최신화한다
+    // (이 시점엔 진행 중인 작업이 없어서 새로고침해도 안전 — 미전송 사진은 IndexedDB에서 복원됨).
+    // 앱을 이미 켜서 쓰던 도중에 새 버전이 발견되면(아래 updatefound), 작업 방해 없이 배너로만 알린다.
+    if(reg.waiting && navigator.serviceWorker.controller) reg.waiting.postMessage('SKIP_WAITING');
+    reg.addEventListener('updatefound',function(){
+      var nw=reg.installing;
+      if(!nw)return;
+      nw.addEventListener('statechange',function(){
+        if(nw.state==='installed' && navigator.serviceWorker.controller) promptUpdate();
+      });
+    });
+    document.addEventListener('visibilitychange',function(){
+      if(document.visibilityState==='visible') reg.update();
+    });
+    reg.update();
+  });
+  var wpReloading=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(wpReloading)return;
+    wpReloading=true;
+    location.reload();
+  });
+}
+</script>
+</body>
+</html>
