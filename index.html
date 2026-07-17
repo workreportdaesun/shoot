@@ -139,7 +139,7 @@ textarea.f{resize:none;height:48px;}
   box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 #toast{background:#27AE60;}
 #toastE{background:#E74C3C;}
-body.embedded .app-header,body.embedded #folderBtn{display:none;}
+body.embedded .app-header,body.embedded #folderBtn,body.embedded #menuTabsCard{display:none;}
 body.embedded{padding-top:4px;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/2.0.0-beta.8/piexif.js"></script>
@@ -163,8 +163,8 @@ body.embedded{padding-top:4px;}
   </div>
 </div>
 
-<!-- 상위 메뉴 -->
-<div class="card" style="padding:8px;">
+<!-- 상위 메뉴: report(작업일보)에서 이미 공종을 선택하고 넘어온 embedded 모드에서는 숨김 -->
+<div class="card" id="menuTabsCard" style="padding:8px;">
   <div class="menu-tabs" id="menuTabs">
     <button type="button" class="menu-tab" data-menu="시공" onclick="setActiveMenu('시공')">시공</button>
     <button type="button" class="menu-tab" data-menu="품질" onclick="setActiveMenu('품질')">품질</button>
