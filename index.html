@@ -356,8 +356,8 @@ async function withdrawMember(){
 }
 
 // ── Supabase ──────────────────────────────────────────
-var SUPABASE_URL='https://dteljgmdbfyxubtpogcj.supabase.co';
-var SUPABASE_KEY='sb_publishable_VC2GcwpxDg_zVbFgOnpfzg__sictyqc';
+var SUPABASE_URL='https://feymoykefzfwucbrqoja.supabase.co';
+var SUPABASE_KEY='sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
 var sbClient=null;
 try{ sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }
 catch(e){ console.error('Supabase 초기화 실패',e); }
@@ -382,9 +382,9 @@ async function sendToSupabase(){
       // 갤러리전송은 원본 파일(blob=File)을 그대로 올리므로, 실제 파일 형식(png/heic 등)에 맞는
       // contentType을 써야 한다 — 항상 image/jpeg로 고정하면 실제로는 다른 형식일 때 문제될 수 있다.
       var uploadType=(p.blob&&p.blob.type)||'image/jpeg';
-      var storageRes=await sbClient.storage.from('work-photo').upload(filePath,p.blob,{contentType:uploadType,upsert:true});
+      var storageRes=await sbClient.storage.from('work-gallery').upload(filePath,p.blob,{contentType:uploadType,upsert:true});
       if(storageRes.error){ failed.push({p:p,err:'[Storage] '+storageRes.error.message}); continue; }
-      var photoUrl=sbClient.storage.from('work-photo').getPublicUrl(filePath).data.publicUrl;
+      var photoUrl=sbClient.storage.from('work-gallery').getPublicUrl(filePath).data.publicUrl;
       var insertData={
         date:p.info.date||'', time:p.info.time||'', tag:p.info.tag||'',
         cat:p.info.cat||'', loc:p.info.loc||'', work_type:p.info.wt||'',

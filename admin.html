@@ -262,8 +262,8 @@ var customAreas=loadList("custom_areas",DEFAULT_AREAS);
 
 // ── 모바일 앱(index.html)·갤러리와 작업분류/작업구역 클라우드 동기화 (Supabase) ──
 // 이 화면은 메뉴 구분 없이 분류 하나만 관리하므로, 모바일 앱의 "시공" 메뉴 목록과 대응한다.
-var SUPABASE_URL='https://dteljgmdbfyxubtpogcj.supabase.co';
-var SUPABASE_KEY='sb_publishable_VC2GcwpxDg_zVbFgOnpfzg__sictyqc';
+var SUPABASE_URL='https://feymoykefzfwucbrqoja.supabase.co';
+var SUPABASE_KEY='sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
 var sbClient=null;
 try{ sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }catch(e){console.error("Supabase 초기화 실패",e);}
 var remoteCatsByMenu=null; // 다른 메뉴(품질/자재/안전/화기 등) 분류를 보존하기 위한 원격 병합 기준값
