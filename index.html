@@ -139,6 +139,8 @@ textarea.f{resize:none;height:48px;}
   box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 #toast{background:#27AE60;}
 #toastE{background:#E74C3C;}
+body.embedded .app-header,body.embedded #folderBtn{display:none;}
+body.embedded{padding-top:4px;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/2.0.0-beta.8/piexif.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -308,7 +310,7 @@ textarea.f{resize:none;height:48px;}
   <button class="sbtn sbtn-kakao" id="kakaoBtn" onclick="shareToKakao()">&#128172; 카톡으로 전송</button>
 </div>
 
-<button class="sbtn sbtn-return" id="reportReturnBtn" style="display:none;" onclick="location.href='/report/app/index.html'">&#9989; 작업일보로 복귀</button>
+<button class="sbtn sbtn-return" id="reportReturnBtn" style="display:none;">&#9989; 작업일보로</button>
 
 <div id="toast"></div>
 <div id="toastE"></div>
@@ -324,10 +326,24 @@ textarea.f{resize:none;height:48px;}
   if(c) document.getElementById('hdrCompany').textContent=c;
   if(n) document.getElementById('hdrUser').textContent=n+'님';
 })();
-// ── 작업일보(report)에서 넘어온 경우 복귀 버튼 노출 ──────────
+// ── report(작업일보)에서 iframe으로 끼워 넣은 경우: 자체 헤더를 숨기고
+// "작업일보로" 버튼을 노출한다. 같은 도메인(workreportdaesun.github.io)이라
+// report가 부모 창에 만들어둔 window.swipeToReport()를 바로 호출해서 스와이프로 돌아간다.
+var isEmbedded = new URLSearchParams(location.search).get('embedded')==='1';
 (function(){
-  if(localStorage.getItem('shoot_handoff_draft')){
-    document.getElementById('reportReturnBtn').style.display='block';
+  if(!isEmbedded) return;
+  document.body.classList.add('embedded');
+  var btn=document.getElementById('reportReturnBtn');
+  btn.style.display='block';
+  btn.onclick=function(){
+    if(window.parent!==window && window.parent.swipeToReport){ window.parent.swipeToReport(); }
+    else{ location.href='/report/app/index.html'; }
+  };
+  var prefillTag=localStorage.getItem('shoot_prefill_tag');
+  if(prefillTag){
+    localStorage.removeItem('shoot_prefill_tag');
+    var tagEl=document.getElementById('inTag');
+    if(tagEl) tagEl.value=prefillTag;
   }
 })();
 function logout(){
