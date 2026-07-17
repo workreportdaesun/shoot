@@ -18,10 +18,11 @@
 body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:100vh;
   padding:8px;font-size:17px;}
 .app-header{background:linear-gradient(135deg,var(--brand-1),var(--brand-2));border-radius:12px;
-  padding:10px 14px;margin-bottom:8px;color:#fff;transition:background 0.25s;}
-.app-title{font-size:26px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+  padding:12px 14px;margin-bottom:10px;color:#fff;transition:background 0.25s;}
+.app-title{font-size:20px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:8px;}
 .app-title img{width:48px;height:48px;border-radius:8px;}
 .app-sub{font-size:11px;opacity:0.75;margin-top:1px;}
+.app-user{font-size:11px;opacity:.9;margin-top:4px;}
 .icon-wrap{position:relative;display:inline-flex;flex:none;cursor:pointer;}
 .icon-wrap.fire img{animation:wp-icon-pop 3.2s ease-in-out;}
 @keyframes wp-icon-pop{0%{transform:scale(1);}20%{transform:scale(1.4);}40%{transform:scale(.8);}60%{transform:scale(1.4);}80%{transform:scale(.8);}100%{transform:scale(1);}}
@@ -146,9 +147,10 @@ textarea.f{resize:none;height:48px;}
 <div class="app-header">
   <div style="display:flex;justify-content:space-between;align-items:center;">
     <div style="min-width:0;flex:1;">
-      <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="Work%20photo_icon/icon-192.png" alt=""/></span> 작업 사진</div>
+      <div class="app-title"><span class="icon-wrap" onclick="fireIconEffect(this)"><img src="icon-mark.png" alt=""/></span> 작업 사진</div>
       <div class="app-sub" id="hdrProject" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">계장 &amp; 전기 공사</div>
       <div class="app-sub" id="hdrCompany" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+      <div class="app-user" id="hdrUser"></div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
       <button onclick="logout()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">로그아웃</button>
@@ -314,8 +316,10 @@ textarea.f{resize:none;height:48px;}
   if(!localStorage.getItem('member_id')){location.href='login.html';return;}
   var p=localStorage.getItem('member_project')||'';
   var c=localStorage.getItem('member_company')||'';
+  var n=localStorage.getItem('member_name')||'';
   if(p) document.getElementById('hdrProject').textContent=p;
   if(c) document.getElementById('hdrCompany').textContent=c;
+  if(n) document.getElementById('hdrUser').textContent=n+'님';
 })();
 function logout(){
   ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
