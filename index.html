@@ -139,8 +139,7 @@ textarea.f{resize:none;height:48px;}
   box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 #toast{background:#27AE60;}
 #toastE{background:#E74C3C;}
-body.embedded .app-header,body.embedded #folderBtn,body.embedded #menuTabsCard{display:none;}
-body.embedded{padding-top:4px;}
+body.embedded #menuTabsCard{display:none;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/piexifjs/2.0.0-beta.8/piexif.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -326,19 +325,16 @@ body.embedded{padding-top:4px;}
   if(c) document.getElementById('hdrCompany').textContent=c;
   if(n) document.getElementById('hdrUser').textContent=n+'님';
 })();
-// ── report(작업일보)에서 iframe으로 끼워 넣은 경우: 자체 헤더를 숨기고
+// ── report(작업일보)에서 넘어온 경우: 이미 고른 공종 탭은 숨기고
 // "작업일보로" 버튼을 노출한다. 같은 도메인(workreportdaesun.github.io)이라
-// report가 부모 창에 만들어둔 window.swipeToReport()를 바로 호출해서 스와이프로 돌아간다.
+// active_menu/last_category/shoot_prefill_tag가 report가 남긴 값 그대로 이어진다.
 var isEmbedded = new URLSearchParams(location.search).get('embedded')==='1';
 (function(){
   if(!isEmbedded) return;
   document.body.classList.add('embedded');
   var btn=document.getElementById('reportReturnBtn');
   btn.style.display='block';
-  btn.onclick=function(){
-    if(window.parent!==window && window.parent.swipeToReport){ window.parent.swipeToReport(); }
-    else{ location.href='/report/app/index.html'; }
-  };
+  btn.onclick=function(){ location.href='/report/app/index.html'; };
   // 주의: 여기서 키를 지우지 않는다. 최초 진입 시 서비스워커가 처음 활성화되면서
   // controllerchange -> location.reload()가 한 번 자동으로 일어나는데, 이때 키를
   // 지워버리면 reload된 두 번째 로드에서는 채울 값이 없어져 비어버린다. 이 키는
