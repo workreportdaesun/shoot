@@ -75,6 +75,7 @@ textarea.f{resize:none;height:48px;}
 .sbtn-send:disabled{background:#BDC3C7;color:#fff;cursor:not-allowed;}
 .sbtn-kakao{background:#FEE500;color:#1A2332;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
 .sbtn-kakao:disabled{background:#F5E6A0;color:#8A8560;cursor:not-allowed;}
+.sbtn-return{background:none;border:1.5px solid var(--brand-2);color:var(--brand-2);margin-top:8px;}
 .list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .list-title{font-size:13px;font-weight:700;color:#1A2332;}
 .list-count{font-size:13px;font-weight:800;color:#2E5F9E;}
@@ -307,6 +308,8 @@ textarea.f{resize:none;height:48px;}
   <button class="sbtn sbtn-kakao" id="kakaoBtn" onclick="shareToKakao()">&#128172; 카톡으로 전송</button>
 </div>
 
+<button class="sbtn sbtn-return" id="reportReturnBtn" style="display:none;" onclick="location.href='/report/app/index.html'">&#9989; 작업일보로 복귀</button>
+
 <div id="toast"></div>
 <div id="toastE"></div>
 
@@ -320,6 +323,12 @@ textarea.f{resize:none;height:48px;}
   if(p) document.getElementById('hdrProject').textContent=p;
   if(c) document.getElementById('hdrCompany').textContent=c;
   if(n) document.getElementById('hdrUser').textContent=n+'님';
+})();
+// ── 작업일보(report)에서 넘어온 경우 복귀 버튼 노출 ──────────
+(function(){
+  if(localStorage.getItem('shoot_handoff_draft')){
+    document.getElementById('reportReturnBtn').style.display='block';
+  }
 })();
 function logout(){
   ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
