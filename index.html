@@ -352,6 +352,13 @@ async function withdrawMember(){
   location.href='login.html';
 }
 
+// toISOString()은 항상 UTC 기준이라, 한국 시간(UTC+9) 자정~오전 9시 사이에 촬영하면
+// 날짜가 하루 전으로 찍히는 문제가 있었다. 촬영일자는 반드시 현지(로컬) 날짜로 계산한다.
+function localDateStr(d){
+  d = d || new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 // ── Supabase ──────────────────────────────────────────
 var SUPABASE_URL='https://feymoykefzfwucbrqoja.supabase.co';
 var SUPABASE_KEY='sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
@@ -1122,7 +1129,7 @@ async function captureShot(){
   if(digitalZoom&&zoomLevel>1) cv=applyDigitalZoom(cv,zoomLevel);
   closeCamera();
   var now=new Date();
-  processCapturedFrame(cv,now.toISOString().slice(0,10),now.toTimeString().slice(0,5));
+  processCapturedFrame(cv,localDateStr(now),now.toTimeString().slice(0,5));
 }
 document.getElementById("inCat").addEventListener("change",updCat);
 
@@ -1200,7 +1207,7 @@ function loadImg(e){
     }catch(ex){}
     if(!autoDate){
       var now=new Date();
-      autoDate=now.toISOString().slice(0,10);
+      autoDate=localDateStr(now);
       autoTime=now.toTimeString().slice(0,5);
     }
     var img=new Image();
@@ -1229,7 +1236,7 @@ function loadOneGalleryFile(file){
       }catch(ex){}
       if(!autoDate){
         var now=new Date();
-        autoDate=now.toISOString().slice(0,10);
+        autoDate=localDateStr(now);
         autoTime=now.toTimeString().slice(0,5);
       }
       // OCR을 안 하므로 화면 표시용 Image 로딩 없이 바로 처리 — 그만큼 더 빠르다
