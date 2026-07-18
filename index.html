@@ -359,6 +359,17 @@ var sbClient=null;
 try{ sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }
 catch(e){ console.error('Supabase 초기화 실패',e); }
 
+// Supabase Storage의 오브젝트 키는 ASCII만 허용한다(한글이 섞이면 "Invalid key"로 업로드
+// 자체가 실패함). 파일명(p.filename)은 촬영자 이름·특이사항 등 한글을 일부러 남겨서
+// 로컬 저장/화면 표시에 쓰므로, 클라우드 업로드 경로만 별도로 한글을 제거해 안전하게 만든다.
+function safeStorageKey(filename){
+  return String(filename)
+    .replace(/[^\x00-\x7F]/g,'')
+    .replace(/_+/g,'_')
+    .replace(/_+(?=\.)/g,'')
+    .replace(/^_+/,'');
+}
+
 async function sendToSupabase(){
   if(!savedPhotos.length){ showTE("전송할 사진이 없습니다."); return; }
   if(!sbClient){ showTE("Supabase 연결 실패"); return; }
@@ -375,7 +386,7 @@ async function sendToSupabase(){
     var p=savedPhotos[i];
     btn.textContent='⏳ 전송 중... ('+(i+1)+'/'+total+'장)';
     try{
-      var filePath=(p.info.date||'nodate')+'/'+p.filename;
+      var filePath=(p.info.date||'nodate')+'/'+safeStorageKey(p.filename);
       // 갤러리전송은 원본 파일(blob=File)을 그대로 올리므로, 실제 파일 형식(png/heic 등)에 맞는
       // contentType을 써야 한다 — 항상 image/jpeg로 고정하면 실제로는 다른 형식일 때 문제될 수 있다.
       var uploadType=(p.blob&&p.blob.type)||'image/jpeg';
