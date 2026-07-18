@@ -1305,7 +1305,9 @@ function openUpload() {
   document.getElementById('upProg').style.display='none';
   document.getElementById('ocrBar').style.display='none';
   document.getElementById('fileInput').value='';
-  document.getElementById('upDate').value=new Date().toISOString().slice(0,10);
+  // toISOString()은 UTC 기준이라 한국 시간 자정~오전 9시 사이엔 날짜가 하루 전으로 나온다 — 로컬 날짜로 계산
+  var _now=new Date();
+  document.getElementById('upDate').value=_now.getFullYear()+'-'+String(_now.getMonth()+1).padStart(2,'0')+'-'+String(_now.getDate()).padStart(2,'0');
   document.getElementById('upTime').value=new Date().toTimeString().slice(0,5);
   ['upTag','upNote'].forEach(id=>document.getElementById(id).value='');
   if(selCat) document.getElementById('upCat').value=selCat;
