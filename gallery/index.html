@@ -205,6 +205,28 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
 .add-row { display: flex; gap: 6px; }
 .add-row input { flex: 1; background: var(--bg); border: 1px solid var(--bd); border-radius: 6px; color: var(--tx); font-size: 0.8rem; padding: 6px 9px; font-family: inherit; }
 .add-row input:focus { outline: none; border-color: var(--ac); }
+
+/* ── 모바일 대응 ── */
+.hdr-menu-btn { display: none; flex-shrink: 0; width: 36px; height: 36px; margin: 0 4px 0 10px; background: none; border: 1px solid var(--bd); border-radius: 6px; color: var(--tx2); font-size: 1.1rem; cursor: pointer; align-items: center; justify-content: center; }
+.sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+.sidebar-backdrop.show { display: block; }
+@media (max-width: 860px) {
+  .hdr-menu-btn { display: flex; }
+  .hdr-logo { width: auto; border-right: none; padding: 0 6px 0 0; }
+  .hdr-logo-txt { display: none; }
+  .hdr-right { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 78vw; max-width: 300px;
+    transform: translateX(-100%); transition: transform .2s ease-out; z-index: 200;
+    box-shadow: 3px 0 16px rgba(0,0,0,0.4); }
+  .sidebar.open { transform: translateX(0); }
+  .filterbar { flex-direction: column; align-items: stretch; }
+  .filterbar input, .filterbar select { width: 100%; }
+  .f-sep { display: none; }
+  .photo-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .modal { width: 94vw; padding: 16px; }
+  .fg-row { flex-direction: column; gap: 0; }
+  .det-meta { grid-template-columns: 1fr; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -212,6 +234,7 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
 
 <!-- 헤더 -->
 <div class="hdr">
+  <button class="hdr-menu-btn" id="hdrMenuBtn" onclick="toggleSidebar()" aria-label="분류 목록 열기">☰</button>
   <div class="hdr-logo">
     <span class="hdr-logo-icon">📸</span>
     <span class="hdr-logo-txt">작업 사진 관리</span>
@@ -232,8 +255,9 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
 <!-- 앱 바디 -->
 <div class="app-body">
 
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
   <!-- 사이드바 -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div class="sb-top">
       <div class="sb-all sel" id="sbAll" onclick="selectAllCat()">
         <span>🗂️</span>
@@ -1066,10 +1090,19 @@ function J(v){ return JSON.stringify(v); }
 function selectAllCat() {
   selCat = null; selWt = null;
   renderSidebar(); renderPhotos(); updateHeader();
+  if(window.innerWidth<=860) toggleSidebar(false);
 }
 function selectCat(cat) {
   selCat = cat; selWt = null;
   renderSidebar(); renderPhotos(); updateHeader();
+  if(window.innerWidth<=860) toggleSidebar(false);
+}
+
+function toggleSidebar(open){
+  const sb=document.getElementById('sidebar'), bd=document.getElementById('sidebarBackdrop');
+  const next = open!==undefined ? open : !sb.classList.contains('open');
+  sb.classList.toggle('open', next);
+  bd.classList.toggle('show', next);
 }
 
 // ── 사진 그리드 ──────────────────────────────────────
