@@ -410,6 +410,10 @@ function removeArea(i){
 }
 
 var loadedImg=null, savedPhotos=[], lockedInfo=null;
+// togglePhaseRow()가 페이지 로드 시 바로 호출되므로(아래), 이 상수는 그 호출들보다
+// 앞에 있어야 한다 — var 선언은 끌어올려지지만 대입은 실행 순서대로 되기 때문에,
+// 뒤에 있으면 첫 호출 때 NEW_PHASES/MOD_PHASES가 undefined라 map()에서 에러가 났었다.
+var NEW_PHASES=["진행중","완료"], MOD_PHASES=["변경전","변경후"];
 
 var now=new Date();
 // toISOString()은 UTC 기준이라 한국 시간 자정~오전 9시 사이엔 날짜가 하루 전으로 나온다 — 로컬 날짜로 계산
@@ -454,7 +458,6 @@ function updCat(){
   document.getElementById("catBar").style.background=CC[v]||"#7F8C8D";
 }
 
-var NEW_PHASES=["진행중","완료"], MOD_PHASES=["변경전","변경후"];
 function togglePhaseRow(){
   var isMod=document.getElementById("wtMod").checked;
   var phases=isMod?MOD_PHASES:NEW_PHASES;
