@@ -157,7 +157,6 @@ textarea.f{resize:none;height:48px;}
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
       <button onclick="logout()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:8px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;">로그아웃</button>
       <button onclick="openSettings()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">⚙️ 설정</button>
-      <button id="folderBtn" onclick="pickSaveFolder()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;">📁 폴더설정</button>
     </div>
   </div>
 </div>
@@ -381,11 +380,6 @@ function safeStorageKey(filename){
 async function sendToSupabase(){
   if(!savedPhotos.length){ showTE("전송할 사진이 없습니다."); return; }
   if(!sbClient){ showTE("Supabase 연결 실패"); return; }
-  // 업로드 전(=사용자 제스처가 살아있는 시점)에 폴더 미지정 여부를 먼저 확인 — 업로드 대기 이후엔 브라우저가 폴더 선택창을 막을 수 있음
-  if(!isMobile && window.showDirectoryPicker && !dirHandle){
-    var wantsFolder=confirm('기기에 사진을 저장할 폴더가 지정되지 않았습니다.\n\n지금 폴더를 지정하시겠습니까?\n(취소하면 다운로드 폴더에 개별 저장됩니다)');
-    if(wantsFolder) await pickSaveFolder();
-  }
   var btn=document.getElementById('sendBtn');
   btn.disabled=true;
   var total=savedPhotos.length;
@@ -486,72 +480,9 @@ async function shareToKakao(){
   }
 }
 
-var dirHandle=null;
-var isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-(function(){
-  var btn=document.getElementById('folderBtn');
-  if(isMobile) btn.style.display='none';
-})();
-
-async function pickSaveFolder(){
-  if(!window.showDirectoryPicker){showTE('Chrome/Edge 데스크탑 전용 기능입니다.');return;}
-  try{
-    dirHandle=await window.showDirectoryPicker({mode:'readwrite',startIn:'downloads'});
-    document.getElementById('folderBtn').textContent='📁 '+dirHandle.name;
-    showT('저장 폴더: '+dirHandle.name);
-    persistFolderHandle(dirHandle);
-  }catch(e){
-    if(e.name!=='AbortError') showTE('폴더 선택 실패: '+e.message);
-  }
-}
-
-async function ensureFolderPermission(handle){
-  try{
-    var result=await handle.requestPermission({mode:'readwrite'});
-    return result==='granted';
-  }catch(e){ return false; }
-}
-
 async function autoSaveToDevice(photos){
-  if(dirHandle&&!isMobile&&!(await ensureFolderPermission(dirHandle))){
-    showTE('폴더 접근 권한이 만료되었습니다. 폴더를 다시 지정해주세요.');
-    downloadAll(photos);
-    setTimeout(function(){finishSend(photos);},photos.length*300+2000);
-    return;
-  }
-  if(dirHandle&&!isMobile){
-    var cnt=0, lastErr='';
-    for(var i=0;i<photos.length;i++){
-      var p=photos[i];
-      try{
-        var ab=await new Promise(function(res,rej){
-          var fr=new FileReader();fr.onload=function(e){res(e.target.result);};fr.onerror=rej;
-          fr.readAsArrayBuffer(p.blob);
-        });
-        // 메뉴 > 작업구분 > 작업분류 순으로 하위폴더 생성 (없으면 생성, 있으면 기존 사용)
-        var menuFolder=sanitizeFolderName((p.info&&p.info.menu)||"시공");
-        var wtFolder=sanitizeFolderName(workTypeFolderName(p.info&&p.info.wt));
-        var catFolder=sanitizeFolderName(p.info&&p.info.cat);
-        var menuDir=await dirHandle.getDirectoryHandle(menuFolder,{create:true});
-        var wtDir=await menuDir.getDirectoryHandle(wtFolder,{create:true});
-        var catDir=await wtDir.getDirectoryHandle(catFolder,{create:true});
-        var fh=await catDir.getFileHandle(p.filename,{create:true});
-        var w=await fh.createWritable();
-        await w.write(new Uint8Array(ab));
-        await w.close();
-        cnt++;
-      }catch(e){
-        lastErr=e.message||String(e);
-        console.error('파일저장실패',p.filename,e);
-      }
-    }
-    if(cnt>0){showT('📁 '+dirHandle.name+'에 '+cnt+'장 저장 완료!');setTimeout(function(){finishSend(photos);},2000);}
-    else{showTE('폴더 저장 실패: '+lastErr);downloadAll(photos);setTimeout(function(){finishSend(photos);},photos.length*300+2000);}
-  } else {
-    downloadAll(photos);
-    setTimeout(function(){finishSend(photos);},photos.length*300+2000);
-  }
+  downloadAll(photos);
+  setTimeout(function(){finishSend(photos);},photos.length*300+2000);
 }
 
 // 전송(및 기기 저장)까지 끝난 사진만 로컬 보관(IndexedDB)에서 정리.
@@ -860,31 +791,6 @@ function openDB(){
   });
   return dbPromise;
 }
-
-// 저장 폴더 핸들 기억 — 한 번 지정하면 새로고침 후에도 다시 묻지 않음
-async function persistFolderHandle(handle){
-  try{
-    var db=await openDB();
-    var tx=db.transaction(SETTINGS_STORE,'readwrite');
-    tx.objectStore(SETTINGS_STORE).put({key:'folderHandle',value:handle});
-  }catch(e){ console.warn('폴더 정보 저장 실패',e); }
-}
-async function loadSavedFolderHandle(){
-  if(isMobile || !window.showDirectoryPicker) return;
-  try{
-    var db=await openDB();
-    var rec=await new Promise(function(resolve){
-      var tx=db.transaction(SETTINGS_STORE,'readonly');
-      var req=tx.objectStore(SETTINGS_STORE).get('folderHandle');
-      req.onsuccess=function(){resolve(req.result);};
-      req.onerror=function(){resolve(null);};
-    });
-    if(rec && rec.value){
-      dirHandle=rec.value;
-      document.getElementById('folderBtn').textContent='📁 '+dirHandle.name;
-    }
-  }catch(e){ console.warn('폴더 정보 불러오기 실패',e); }
-}
 async function dbAddPhoto(p){
   var db=await openDB();
   return new Promise(function(resolve,reject){
@@ -931,7 +837,6 @@ async function restoreSavedPhotos(){
   }catch(e){console.error("사진 복원 실패",e);}
 }
 restoreSavedPhotos();
-loadSavedFolderHandle();
 
 populateAreaSelect();
 populateCatSelect();
@@ -1384,19 +1289,6 @@ function sanitizeForFilenameKr(str){
     .replace(/\s+/g,"_")
     .replace(/^[_\-]+|[_\-]+$/g,"")
     .slice(0,30):"";
-}
-
-// 폴더명은 한글을 유지해야 하므로 sanitizeForFilename과 별도로 예약문자만 치환
-function sanitizeFolderName(name){
-  var cleaned=String(name==null?"":name).replace(/[\\/:*?"<>|]/g,"_").trim();
-  return cleaned||"Others";
-}
-// 시공/품질은 수정 선택 시 변경전/변경후로, 시공은 신규 선택 시 진행중/완료로 세분화되지만
-// 폴더는 각각 "수정"/"신규" 하나로 묶음
-function workTypeFolderName(wt){
-  if(wt==="변경전"||wt==="변경후")return "수정";
-  if(wt==="진행중"||wt==="완료")return "신규";
-  return wt||"기타";
 }
 
 var WT_EN={'신규':'new','진행중':'in-progress','완료':'done','변경전':'mod-before','변경후':'mod-after','도급':'contract','사급':'owner-supply','현장안전점검':'safety-check','안전용품':'safety-gear','화기감시자':'fire-watch','유도원':'guide'};
