@@ -6,7 +6,7 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#1E3A5F" barStyle="light-content"/>
       <WebView
-        source={{ uri: 'https://faraoh77777.github.io/shaheen-photo/' }}
+        source={{ uri: 'https://workreportdaesun.github.io/shoot/' }}
         style={styles.webview}
         allowsInlineMediaPlayback={true}
         mediaPlaybackRequiresUserAction={false}
