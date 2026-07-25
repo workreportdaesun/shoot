@@ -209,6 +209,7 @@ function saveSession(m){
   localStorage.setItem('member_project',m.project);
   localStorage.setItem('member_phone',m.phone);
   localStorage.setItem('senderName',m.name);
+  localStorage.setItem('member_is_leader', m.is_leader ? '1' : '0');
   if(m.category) localStorage.setItem('member_category',m.category);
 }
 

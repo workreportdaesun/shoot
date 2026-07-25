@@ -328,7 +328,7 @@ textarea.f{resize:none;height:48px;}
 // "작업일보로" 버튼은 report로 돌아가는 간단한 이동 수단으로 항상 보여준다.
 document.getElementById('reportReturnBtn').onclick=function(){ location.href='/report/app/index.html'; };
 function logout(){
-  ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
+  ['member_id','member_name','member_company','member_project','member_phone','member_category','member_is_leader','senderName'].forEach(function(k){localStorage.removeItem(k);});
   location.href='login.html';
 }
 function fireIconEffect(el){
@@ -348,7 +348,7 @@ async function withdrawMember(){
     try{ await sbClient.from('members').delete().eq('id',memberId); }
     catch(e){ console.error('회원 탈퇴 실패',e); showTE('회원 탈퇴 실패: '+(e.message||e)); return; }
   }
-  ['member_id','member_name','member_company','member_project','member_phone','member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
+  ['member_id','member_name','member_company','member_project','member_phone','member_category','member_is_leader','senderName'].forEach(function(k){localStorage.removeItem(k);});
   location.href='login.html';
 }
 
