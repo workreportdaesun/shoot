@@ -404,7 +404,7 @@ async function sendToSupabase(){
       };
       // sender/menu 컬럼이 DB에 없으면 해당 필드만 제거하고 재시도
       var OPTIONAL_COLS=['sender','menu'];
-      var dbRes=await sbClient.from('work_photos').insert(insertData);
+      var dbRes=await sbClient.from('workreportdaesun-gallery').insert(insertData);
       var attempts=0;
       while(dbRes.error&&attempts<OPTIONAL_COLS.length){
         var msg=(dbRes.error.message||'').toLowerCase();
@@ -414,7 +414,7 @@ async function sendToSupabase(){
           if((col in insertData)&&msg.includes(col)){ delete insertData[col]; stripped=true; break; }
         }
         if(!stripped)break;
-        dbRes=await sbClient.from('work_photos').insert(insertData);
+        dbRes=await sbClient.from('workreportdaesun-gallery').insert(insertData);
         attempts++;
       }
       if(dbRes.error){ failed.push({p:p,err:'[DB] '+dbRes.error.message}); continue; }
@@ -1053,7 +1053,7 @@ async function checkTagDuplicate(){
   var cat=document.getElementById("inCat").value;
   if(!tag||!cat||!sbClient)return;
   try{
-    var res=await sbClient.from('work_photos').select('id').eq('cat',cat).eq('tag',tag).limit(1);
+    var res=await sbClient.from('workreportdaesun-gallery').select('id').eq('cat',cat).eq('tag',tag).limit(1);
     if(res.error){console.error('중복 확인 실패',res.error);return;}
     if(res.data&&res.data.length){
       var keep=confirm('['+cat+'] 분류에 이미 등록된 TAG NO입니다: '+tag+'\n그래도 저장하시겠습니까?');

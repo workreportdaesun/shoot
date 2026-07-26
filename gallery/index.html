@@ -581,7 +581,7 @@ async function syncFromSupabase(){
   btn.disabled=true; btn.textContent='⏳ 동기화 중...';
   try {
     const {data:records,error}=await sbClient
-      .from('work_photos').select('*').order('date',{ascending:false});
+      .from('workreportdaesun-gallery').select('*').order('date',{ascending:false});
     if(error) throw error;
     if(!records||records.length===0){ alert('클라우드에 사진이 없습니다.'); return; }
 
