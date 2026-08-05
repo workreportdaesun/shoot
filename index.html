@@ -388,6 +388,18 @@ async function sendToSupabase(){
     var p=savedPhotos[i];
     btn.textContent='⏳ 전송 중... ('+(i+1)+'/'+total+'장)';
     try{
+      // 사진전송 규칙(2026-08-06): 완료(신규 트랙)나 변경후(수정 트랙)로 이미 등록된
+      // 기기번호는 전송 자체를 막는다 — 판단 키는 작업분류+기기번호만 쓴다(공종은 안 봄).
+      // checkTagDuplicate(태그 입력칸 blur)는 확인창만 띄우고 "예"를 누르면 그냥
+      // 전송돼버리는 물렁한 경고였는데, 여기서 실제 전송 직전에 한 번 더 확실히 막는다.
+      var terminal=terminalStatusOf(p.info.wt);
+      if(terminal){
+        var lockRes=await sbClient.from('workreportdaesun-gallery').select('id').eq('cat',p.info.cat).eq('tag',p.info.tag).eq('work_type',terminal).limit(1);
+        if(!lockRes.error && lockRes.data && lockRes.data.length){
+          failed.push({p:p,err:'['+(p.info.cat||'-')+'] '+(p.info.tag||'-')+'는 이미 '+terminal+' 상태입니다 — 전송할 수 없습니다.'});
+          continue;
+        }
+      }
       var filePath=(p.info.date||'nodate')+'/'+safeStorageKey(p.filename);
       // 갤러리전송은 원본 파일(blob=File)을 그대로 올리므로, 실제 파일 형식(png/heic 등)에 맞는
       // contentType을 써야 한다 — 항상 image/jpeg로 고정하면 실제로는 다른 형식일 때 문제될 수 있다.
@@ -1069,6 +1081,15 @@ function getWorkLabel(){
   var phases=wtPhasesFor(v,d);
   if(phases) return document.getElementById('inPhase').value||phases[0];
   return v;
+}
+/* 사진전송 규칙(2026-08-06, 사용자 스펙): 신규 트랙(진행중/완료)과 수정 트랙(변경전/변경후)은
+   서로 독립 — 신규가 완료돼도 수정은 처음부터 다시 신규와 동일한 규칙을 적용받는다. 지금
+   상태가 어느 트랙인지 보고 그 트랙의 최종 상태(완료 또는 변경후)를 돌려준다 — 그 외
+   공종(자재/안전/화기유도 등, 이 어휘 자체가 없음)은 null(잠금 대상 아님). */
+function terminalStatusOf(status){
+  if(status==='진행중' || status==='완료') return '완료';
+  if(status==='변경전' || status==='변경후') return '변경후';
+  return null;
 }
 function togglePhaseSelect(){
   var checked=document.querySelector('input[name="workType"]:checked');
