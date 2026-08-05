@@ -177,7 +177,7 @@ textarea.f{resize:none;height:48px;}
   <div class="flbl" id="lblTag">기기번호</div>
   <div class="mic-row">
     <input type="text" id="inTag" class="f" placeholder="PT-2101, EQ-001 등"
-      oninput="this.value=this.value.toUpperCase()"/>
+      oninput="normalizeTagInput(this)"/>
     <button class="mic-btn" id="micTag" onclick="startSTT('inTag','micTag')" title="음성 입력">&#127908;</button>
   </div>
 
@@ -1074,6 +1074,18 @@ async function checkTagDuplicate(){
   }catch(e){console.error('중복 확인 실패',e);}
 }
 
+/* 기기번호 입력칸 공통 정규화(2026-08-06, 사용자 요청) — 영어는 항상 대문자로, 수기로
+   띄어쓰기를 하면 공백 대신 "-"가 들어가게 한다. toUpperCase()/공백→"-" 치환은 둘 다
+   문자 길이가 바뀌지 않으므로, 커서 위치를 저장했다가 그대로 복원해서 수정 중 커서가
+   끝으로 튀는 불편을 없앤다. */
+function normalizeTagInput(el){
+  var v = el.value;
+  var normalized = v.toUpperCase().replace(/ /g, '-');
+  if(normalized === v) return;
+  var start = el.selectionStart, end = el.selectionEnd;
+  el.value = normalized;
+  el.setSelectionRange(start, end);
+}
 function getWorkLabel(){
   var wt=document.querySelector('input[name="workType"]:checked');
   var v=wt?wt.value:'신규';

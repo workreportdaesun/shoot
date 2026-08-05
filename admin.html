@@ -124,7 +124,7 @@ canvas{width:100%;border-radius:12px;display:block;}
   </div>
 
   <div class="flbl">기기번호 (TAG NO, EQ NO, 모든 기기이름 및 번호)</div>
-  <input type="text" id="inTag" class="f" placeholder="예: PT-2101, EQ-001 등 기기 번호"/>
+  <input type="text" id="inTag" class="f" placeholder="예: PT-2101, EQ-001 등 기기 번호" oninput="normalizeTagInput(this)"/>
 
   <div class="flbl">작업 구분</div>
   <div style="display:flex;gap:10px;margin-bottom:4px;">
@@ -250,6 +250,17 @@ var DEFAULT_CATS=["DCS Panel","LCP","Junction Box","Field Instrument","Cable Duc
   "Conduit Pipe","Air Pipe","Hook Up","Stanchion","Support","Connection","Line Check","Loop Test",
   "Leak Test","Instrument Calibration","Steam Tracing Tube","Steam Tracing Insulation","Scaffolding","Others","관리자"];
 var DEFAULT_AREAS=["SCC","U&O"];
+/* 기기번호 입력칸 공통 정규화(2026-08-06, 사용자 요청) — 영어는 항상 대문자로, 수기로
+   띄어쓰기를 하면 공백 대신 "-"가 들어가게 한다. 커서 위치를 저장했다가 그대로 복원해서
+   수정 중 커서가 끝으로 튀는 불편을 없앤다(index.html/work-report-daesun과 동일 로직). */
+function normalizeTagInput(el){
+  var v = el.value;
+  var normalized = v.toUpperCase().replace(/ /g, '-');
+  if(normalized === v) return;
+  var start = el.selectionStart, end = el.selectionEnd;
+  el.value = normalized;
+  el.setSelectionRange(start, end);
+}
 function loadList(key,def){
   try{
     var v=JSON.parse(localStorage.getItem(key));
