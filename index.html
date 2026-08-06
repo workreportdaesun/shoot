@@ -1010,24 +1010,11 @@ function applyDigitalZoom(source,zoom){
   cv.getContext("2d").drawImage(source,ox,oy,cw,ch,0,0,sw,sh);
   return cv;
 }
-function playShutterSound(){
-  try{
-    var ctx=new (window.AudioContext||window.webkitAudioContext)();
-    var o=ctx.createOscillator(),g=ctx.createGain();
-    o.type="square";
-    o.frequency.setValueAtTime(1200,ctx.currentTime);
-    g.gain.setValueAtTime(0.35,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.09);
-    o.connect(g);g.connect(ctx.destination);
-    o.start();
-    o.stop(ctx.currentTime+0.09);
-    o.onended=function(){ctx.close();};
-  }catch(e){}
-}
 async function captureShot(){
   var video=document.getElementById("camVideo");
   if(!video.videoWidth)return;
-  playShutterSound();
+  // 합성 셔터음(오실레이터 비프음)을 없애서 작업일보(work-report-daesun) 사진촬영과
+  // 동일하게(커스텀 소리 없이) 만들었다(2026-08-06, 사용자 요청).
   var cv=null;
   if(window.ImageCapture&&camTrack){
     try{
