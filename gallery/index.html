@@ -742,7 +742,7 @@ async function savePhotoToFolder(blob, filename, cat) {
   try {
     // cats 배열과 대소문자 무관 매칭으로 정확한 폴더명 사용
     const matched = cats.find(c => c.toLowerCase() === (cat||'').toLowerCase().replace(/_/g,' '));
-    const folderName = matched || cat || 'Others';
+    const folderName = matched || cat || 'OTHERS';
     const subDir = await dirHandle.getDirectoryHandle(folderName, { create: true });
     const fh = await subDir.getFileHandle(filename, { create: true });
     const writable = await fh.createWritable();
@@ -843,7 +843,7 @@ async function loadFromFolder() {
     for await (const [name, handle] of dirHandle.entries()) {
       if (handle.kind === 'directory') {
         // 작업분류 서브폴더 스캔
-        const cat = (name === 'Others') ? '' : name;
+        const cat = (name === 'OTHERS') ? '' : name;
         for await (const [subName, subHandle] of handle.entries()) {
           if (subHandle.kind !== 'file') continue;
           if (!/\.(jpg|jpeg|png)$/i.test(subName)) continue;
@@ -883,21 +883,21 @@ let teams = ['A팀','B팀','C팀','D팀'];
 let areas = ['SCC','U&O'];
 let notePresets = [];
 let cats = [
-  'DCS Panel','LCP','Junction Box','Instrument',
-  'Cable Duct','Cable Tray','Cable Pulling','Connection',
-  'Conduit Pipe','Air Pipe','Hook Up','Support','Stanchion',
-  'Steam Tracing','Scaffolding','Line Check','Loop Test',
-  'Calibration','Leak Test','Others','관리자','장비작업'
+  'DCS PANEL','LCP','JUNCTION BOX','INSTRUMENT',
+  'CABLE DUCT','CABLE TRAY','CABLE PULLING','CONNECTION',
+  'CONDUIT PIPE','AIR PIPE','HOOK UP','SUPPORT','STANCHION',
+  'STEAM TRACING','SCAFFOLDING','LINE CHECK','LOOP TEST',
+  'CALIBRATION','LEAK TEST','OTHERS','관리자','장비작업'
 ];
 
 const CAT_ICON = {
-  'DCS Panel':'🖥️','LCP':'🔌','Junction Box':'📦','Instrument':'🎛️',
-  'Cable Duct':'🛤️','Cable Tray':'🗄️','Cable Pulling':'🧵','Connection':'🔌',
-  'Conduit Pipe':'🔩','Air Pipe':'💨',
-  'Hook Up':'🔗','Support':'🔧','Stanchion':'🏗️',
-  'Line Check':'📋','Loop Test':'🔁','Leak Test':'💧',
-  'Calibration':'🔬','Steam Tracing':'♨️',
-  'Scaffolding':'🏗️','Others':'📁','관리자':'🗂️','장비작업':'🚜'
+  'DCS PANEL':'🖥️','LCP':'🔌','JUNCTION BOX':'📦','INSTRUMENT':'🎛️',
+  'CABLE DUCT':'🛤️','CABLE TRAY':'🗄️','CABLE PULLING':'🧵','CONNECTION':'🔌',
+  'CONDUIT PIPE':'🔩','AIR PIPE':'💨',
+  'HOOK UP':'🔗','SUPPORT':'🔧','STANCHION':'🏗️',
+  'LINE CHECK':'📋','LOOP TEST':'🔁','LEAK TEST':'💧',
+  'CALIBRATION':'🔬','STEAM TRACING':'♨️',
+  'SCAFFOLDING':'🏗️','OTHERS':'📁','관리자':'🗂️','장비작업':'🚜'
 };
 const WT_ORDER = ['신규','작업전','작업후'];
 const WT_META  = {
@@ -922,7 +922,7 @@ function openBatch() {
 async function startBatch() {
   const mode = document.querySelector('input[name="batchMode"]:checked').value;
   const targets = mode === 'uncat'
-    ? photos.filter(p => !p.cat || p.cat === 'Others')
+    ? photos.filter(p => !p.cat || p.cat === 'OTHERS')
     : [...photos];
 
   if (targets.length === 0) {
@@ -1074,7 +1074,7 @@ function renderSidebar() {
   const enabledList = cats.filter(c => enabledCats.has(c));
 
   list.innerHTML = enabledList.map(cat => {
-    const cps = photos.filter(p => (p.cat||'Others') === cat);
+    const cps = photos.filter(p => (p.cat||'OTHERS') === cat);
     const sel = selCat === cat;
 
     return `<div class="sb-cat${sel?' sel':''}" onclick='selectCat(${J(cat)})'>
@@ -1112,7 +1112,7 @@ function getFiltered() {
   const team   = document.getElementById('fTeam').value;
   const wt     = document.getElementById('fWt').value;
   return photos.filter(p =>
-    (selCat === null || (p.cat||'Others') === selCat) &&
+    (selCat === null || (p.cat||'OTHERS') === selCat) &&
     (selWt  === null || p.wt === selWt) &&
     (!date   || p.date === date) &&
     (!team   || p.team === team) &&
@@ -1124,8 +1124,8 @@ function getFiltered() {
 function renderPhotos() {
   const filtered = getFiltered();
   const base = selCat === null ? photos.length
-             : selWt  === null ? photos.filter(p=>(p.cat||'Others')===selCat).length
-             : photos.filter(p=>(p.cat||'Others')===selCat&&p.wt===selWt).length;
+             : selWt  === null ? photos.filter(p=>(p.cat||'OTHERS')===selCat).length
+             : photos.filter(p=>(p.cat||'OTHERS')===selCat&&p.wt===selWt).length;
   document.getElementById('fCount').textContent = filtered.length !== base
     ? `${filtered.length} / ${base}장` : `${base}장`;
   const vc = document.getElementById('viewContent');
@@ -1143,7 +1143,7 @@ function renderPhotos() {
   let html = '';
   if (showCatHeader) {
     const groups = {};
-    filtered.forEach(p => { const k=p.cat||'Others'; if(!groups[k])groups[k]=[]; groups[k].push(p); });
+    filtered.forEach(p => { const k=p.cat||'OTHERS'; if(!groups[k])groups[k]=[]; groups[k].push(p); });
     const sortedKeys = Object.keys(groups).sort((a,b)=>(cats.indexOf(a)<0?999:cats.indexOf(a))-(cats.indexOf(b)<0?999:cats.indexOf(b)));
     sortedKeys.forEach(k => {
       html += `<div style="margin-bottom:6px;margin-top:14px;font-size:0.75rem;font-weight:700;color:var(--tx2);">${CAT_ICON[k]||'📁'} ${k} <span style="font-weight:400;color:var(--tx3);">${groups[k].length}장</span></div>`;
@@ -1164,7 +1164,7 @@ function photoCard(p) {
     <img src="${p.dataUrl}" alt="${p.name||''}" loading="lazy">
     <button class="pc-dl-btn" onclick="event.stopPropagation();downloadPhoto(${J(sid)})" title="다운로드">⬇</button>
     <div class="pc-body">
-      ${selCat===null?`<div class="pc-cat">${CAT_ICON[p.cat||'Others']||''} ${p.cat||'Others'}</div>`:''}
+      ${selCat===null?`<div class="pc-cat">${CAT_ICON[p.cat||'OTHERS']||''} ${p.cat||'OTHERS'}</div>`:''}
       <div class="pc-date">${p.date}${p.time?' · '+p.time:''}</div>
       <div class="pc-tag">${p.tag||'—'}</div>
       <div class="pc-badges">
@@ -1704,7 +1704,7 @@ function closeSettings(){ document.getElementById('setOverlay').classList.remove
 function renderFolderList(){
   const el=document.getElementById('folderList');
   el.innerHTML=cats.map((cat,i)=>{
-    const cnt=photos.filter(p=>(p.cat||'Others')===cat).length;
+    const cnt=photos.filter(p=>(p.cat||'OTHERS')===cat).length;
     return`<div class="folder-item">
       <label>
         <input type="checkbox" ${enabledCats.has(cat)?'checked':''} onchange='toggleFolder(${J(cat)},this.checked)'>
@@ -1748,7 +1748,7 @@ function addCat(){
 }
 function removeCat(i){
   const cat=cats[i];
-  if(photos.some(p=>(p.cat||'Others')===cat)){alert(`"${cat}"에 사진이 있어 삭제할 수 없습니다.`);return;}
+  if(photos.some(p=>(p.cat||'OTHERS')===cat)){alert(`"${cat}"에 사진이 있어 삭제할 수 없습니다.`);return;}
   cats.splice(i,1); enabledCats.delete(cat);
   saveSettings(); renderSidebar(); renderFolderList();
 }
