@@ -564,7 +564,8 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
   if(chip&&(n||c)) chip.textContent='👤 '+(n||'')+(c?' · '+c:'');
 })();
 function galleryLogout(){
-  ['member_id','member_name','member_company','member_project','member_phone','senderName'].forEach(k=>localStorage.removeItem(k));
+  // report와 공유하는 키까지 전부 지운다 — 남겨두면 다음 사람이 앞사람 팀/분류를 물려받는다.
+  ['member_id','member_name','member_company','member_project','member_phone','member_team','member_menu','member_cat','member_category','member_is_leader','senderName'].forEach(k=>localStorage.removeItem(k));
   location.href='../login.html';
 }
 

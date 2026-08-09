@@ -77,31 +77,22 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
       <input type="text" id="regName" class="f" placeholder="홍길동"/>
       <div class="flbl">전화번호</div>
       <input type="tel" id="regPhone" class="f" placeholder="01012345678"/>
-      <div class="flbl">작업 분류</div>
-      <select id="regCategory" class="f">
-        <option value="DCS PANEL">DCS PANEL</option>
-        <option value="LCP">LCP</option>
-        <option value="JUNCTION BOX">JUNCTION BOX</option>
-        <option value="INSTRUMENT" selected>INSTRUMENT</option>
-        <option value="CABLE DUCT">CABLE DUCT</option>
-        <option value="CABLE TRAY">CABLE TRAY</option>
-        <option value="CABLE PULLING">CABLE PULLING</option>
-        <option value="CONNECTION">CONNECTION</option>
-        <option value="CONDUIT PIPE">CONDUIT PIPE</option>
-        <option value="AIR PIPE">AIR PIPE</option>
-        <option value="HOOK UP">HOOK UP</option>
-        <option value="SUPPORT">SUPPORT</option>
-        <option value="STANCHION">STANCHION</option>
-        <option value="STEAM TRACING">STEAM TRACING</option>
-        <option value="SCAFFOLDING">SCAFFOLDING</option>
-        <option value="LINE CHECK">LINE CHECK</option>
-        <option value="LOOP TEST">LOOP TEST</option>
-        <option value="CALIBRATION">CALIBRATION</option>
-        <option value="LEAK TEST">LEAK TEST</option>
-        <option value="OTHERS">OTHERS</option>
-        <option value="관리자">관리자</option>
-        <option value="장비작업">장비작업</option>
+      <!-- 소속팀/공종/작업분류는 report(app/login.html)의 회원가입과 반드시 같은 항목이어야 한다 —
+           여기서 team을 안 받으면 report의 draftId()가 '미지정_날짜'로 떨어져서 그 사람 일보와
+           출력체크가 실제 팀 일보와 다른 행에 쌓인다. 아래 기본 옵션들은 Supabase 연결 실패
+           대비용이고, 정상 연결되면 loadTeamOptions()/loadCatOptions()가 app_settings로 덮어쓴다. -->
+      <div class="flbl">소속팀</div>
+      <select id="regTeam" class="f">
+        <option>1팀(계장)</option><option>2팀(계장)</option><option>품질팀</option><option>안전관리팀</option>
       </select>
+      <div id="regTeamHint" style="font-size:11px;color:#5A7A9A;margin-top:4px;"></div>
+      <div class="flbl">공종</div>
+      <select id="regMenu" class="f" onchange="renderRegCatOptions()">
+        <option>시공</option><option>품질</option><option>자재</option><option>안전</option><option>화기/유도</option>
+      </select>
+      <div class="flbl">작업 분류</div>
+      <select id="regCat" class="f"></select>
+      <div id="regCatHint" style="font-size:11px;color:#5A7A9A;margin-top:4px;"></div>
       <button class="sbtn" onclick="doSignup()">가입하기</button>
     </div>
   </div>
@@ -144,6 +135,59 @@ async function loadSignupOptions(){
 }
 loadSignupOptions();
 
+/* ── 소속팀 / 공종 / 작업분류 옵션 — report(app/login.html)와 같은 소스(app_settings)를 본다.
+   관리자가 ⚙️설정에서 인원(팀)이나 작업분류를 바꾸면 다음 가입자부터 양쪽 앱에 똑같이 반영된다.
+   조회 실패 시엔 HTML에 적어둔 기본 옵션을 그대로 두고 안내 문구만 띄운다. ── */
+async function loadTeamOptions(){
+  var sel=document.getElementById('regTeam');
+  var hint=document.getElementById('regTeamHint');
+  try{
+    var res=await sbClient.from('app_settings').select('personnel').eq('id','global').single();
+    var list=(res.data&&Array.isArray(res.data.personnel))?res.data.personnel:[];
+    if(res.error||!list.length){hint.textContent='⚠️ 팀 목록을 불러오지 못해 기본 목록으로 표시합니다.';return;}
+    var cur=sel.value;
+    sel.innerHTML=list.map(function(t){return '<option>'+t+'</option>';}).join('');
+    if(list.indexOf(cur)!==-1) sel.value=cur;
+    hint.textContent='';
+  }catch(e){hint.textContent='⚠️ 팀 목록을 불러오지 못해 기본 목록으로 표시합니다.';}
+}
+loadTeamOptions();
+
+/* 대문자 표기는 원격 커밋 d6d0e12("작업분류 텍스트 전부 대문자로 통일")과 실제
+   app_settings.cats_by_menu 값에 맞춘 것이다 — 여기만 소문자로 두면 오프라인 fallback일 때
+   분류 이름이 갈려서 색상맵·사진 자동연동이 어긋난다. */
+var SITE_CATS=['DCS PANEL','LCP','JUNCTION BOX','INSTRUMENT','CABLE DUCT','CABLE TRAY','CABLE PULLING','CONNECTION','CONDUIT PIPE','AIR PIPE','HOOK UP','SUPPORT','STANCHION','STEAM TRACING','SCAFFOLDING','LINE CHECK','LOOP TEST','CALIBRATION','LEAK TEST','OTHERS','관리자','장비작업'];
+var catsByMenu={
+  '시공': SITE_CATS.slice(),
+  '품질': SITE_CATS.slice(),
+  '자재': SITE_CATS.slice(),
+  '안전': ['개인보호구','안전난간','소화기','전기안전','고소작업','위험물보관','비상통로','중장비안전','밀폐공간','낙하물방지','기타'],
+  '화기/유도': ['용접작업','절단작업','화재감시','가연물제거','방화포','가스누출점검','소화기배치','유도원배치','차량유도','작업구간통제','기타']
+};
+function renderRegCatOptions(){
+  var menu=document.getElementById('regMenu').value;
+  var sel=document.getElementById('regCat');
+  var cur=sel.value;
+  var list=catsByMenu[menu]||[];
+  sel.innerHTML=list.map(function(c){return '<option>'+c+'</option>';}).join('');
+  if(list.indexOf(cur)!==-1) sel.value=cur;
+}
+renderRegCatOptions();
+async function loadCatOptions(){
+  var hint=document.getElementById('regCatHint');
+  try{
+    var res=await sbClient.from('app_settings').select('cats_by_menu').eq('id','global').single();
+    var data=res.data&&res.data.cats_by_menu;
+    if(res.error||!data){hint.textContent='⚠️ 작업분류 목록을 불러오지 못해 기본 목록으로 표시합니다.';return;}
+    Object.keys(catsByMenu).forEach(function(m){
+      if(Array.isArray(data[m])&&data[m].length) catsByMenu[m]=data[m];
+    });
+    renderRegCatOptions();
+    hint.textContent='';
+  }catch(e){hint.textContent='⚠️ 작업분류 목록을 불러오지 못해 기본 목록으로 표시합니다.';}
+}
+loadCatOptions();
+
 function switchTab(t){
   document.getElementById('panelLogin').style.display=t==='login'?'':'none';
   document.getElementById('panelSignup').style.display=t==='signup'?'':'none';
@@ -179,25 +223,35 @@ async function doSignup(){
   var project=document.getElementById('regProject').value.trim();
   var name=document.getElementById('regName').value.trim();
   var phone=normPhone(document.getElementById('regPhone').value.trim());
-  var category=document.getElementById('regCategory').value;
+  var team=document.getElementById('regTeam').value;
+  var menu=document.getElementById('regMenu').value;
+  var cat=document.getElementById('regCat').value;
   if(!company||!project||!name||phone.length<10){showTE('모든 항목을 입력해 주세요.');return;}
   showT('가입 중...');
-  var insertData={company:company,project:project,name:name,phone:phone,category:category};
-  var res=await sbClient.from('members').insert(insertData).select().single();
-  if(res.error){
-    var msg=res.error.message||'';
-    if(msg.toLowerCase().includes('category')){
-      var d2=Object.assign({},insertData); delete d2.category;
-      res=await sbClient.from('members').insert(d2).select().single();
-      if(res.data) res.data.category=category;
+  /* report(app/login.html doSignup)와 동일한 컬럼 누락 재시도 패턴 — team/menu/cat/is_leader
+     컬럼이 아직 없는 상태로 배포돼도 나머지는 정상 저장되도록, 에러가 지목한 컬럼만 빼고 재시도한다. */
+  var full={company:company,project:project,name:name,phone:phone,team:team,menu:menu,cat:cat,is_leader:false};
+  var payload=Object.assign({},full);
+  var stripped=[];
+  var res;
+  for(var attempt=0;attempt<6;attempt++){
+    res=await sbClient.from('members').insert(payload).select().single();
+    if(!res.error)break;
+    var m=/Could not find the '([^']+)' column/.exec(res.error.message||'');
+    if(m&&Object.prototype.hasOwnProperty.call(payload,m[1])){
+      stripped.push(m[1]);
+      delete payload[m[1]];
+      continue;
     }
-    if(res.error){
-      var msg2=res.error.message||'';
-      if(msg2.includes('unique')||msg2.includes('duplicate')){showTE('이미 등록된 전화번호입니다.');}
-      else{showTE('가입 실패: '+msg2);}
-      return;
-    }
+    break;
   }
+  if(res.error){
+    var msg2=res.error.message||'';
+    if(msg2.includes('unique')||msg2.includes('duplicate')){showTE('이미 등록된 전화번호입니다.');}
+    else{showTE('가입 실패: '+msg2);}
+    return;
+  }
+  stripped.forEach(function(col){ res.data[col]=full[col]; });
   saveSession(res.data);
   showT('가입 완료! 환영합니다, '+res.data.name+'님!');
   setTimeout(function(){location.href='index.html';},1000);
@@ -211,7 +265,16 @@ function saveSession(m){
   localStorage.setItem('member_phone',m.phone);
   localStorage.setItem('senderName',m.name);
   localStorage.setItem('member_is_leader', m.is_leader ? '1' : '0');
-  if(m.category) localStorage.setItem('member_category',m.category);
+  /* report(app/index.html)와 같은 localStorage를 공유하므로 team/menu/cat을 반드시 같이 넣어야 한다.
+     안 넣으면 report의 draftId()가 '미지정_날짜'가 되어 일보·출력체크가 실제 팀 일보와 갈라진다.
+     기존 회원처럼 값이 비어 있을 수 있으므로 빈 문자열로라도 항상 덮어써서, 앞사람 값이 남지 않게 한다. */
+  localStorage.setItem('member_team', m.team || '');
+  localStorage.setItem('member_menu', m.menu || '');
+  localStorage.setItem('member_cat', m.cat || '');
+  /* member_category는 shoot index.html의 분류 드롭다운 기본값으로만 쓰인다. members 테이블엔
+     category 컬럼이 더 이상 없으므로(현재 컬럼: team/menu/cat/role/…) 작업분류(cat)를 그대로 쓴다. */
+  var cat0 = m.cat || m.category || '';
+  if(cat0) localStorage.setItem('member_category', cat0);
 }
 
 function showT(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(function(){t.style.display='none';},2500);}
