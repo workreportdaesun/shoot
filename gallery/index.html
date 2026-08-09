@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>작업 사진 관리</title>
+<!-- 사진목록은 현장관리자 이상. 작업자(worker)는 출퇴근체크로 돌려보낸다. -->
+<script src="/report/role-gate.js" data-require="manager"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -565,7 +567,7 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
 })();
 function galleryLogout(){
   // report와 공유하는 키까지 전부 지운다 — 남겨두면 다음 사람이 앞사람 팀/분류를 물려받는다.
-  ['member_id','member_name','member_company','member_project','member_phone','member_team','member_menu','member_cat','member_category','member_is_leader','senderName'].forEach(k=>localStorage.removeItem(k));
+  ['member_id','member_name','member_company','member_project','member_phone','member_team','member_menu','member_cat','member_category','member_is_leader','member_role','senderName'].forEach(k=>localStorage.removeItem(k));
   location.href='../login.html';
 }
 

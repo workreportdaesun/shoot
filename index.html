@@ -12,6 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="작업사진"/>
+<!-- 작업사진은 현장관리자 이상. 작업자(worker)는 출퇴근체크로 돌려보낸다. -->
+<script src="/report/role-gate.js" data-require="manager"></script>
 <style>
 :root{--brand-1:#1E3A5F;--brand-2:#2E5F9E;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -330,7 +332,7 @@ document.getElementById('reportReturnBtn').onclick=function(){ location.href='/r
 function logout(){
   /* member_team/menu/cat은 report와 공유하는 키다 — 여기서 안 지우면 로그아웃 뒤 다른 사람이
      이 기기에서 로그인했을 때 앞사람 팀이 그대로 남아 그 팀 일보에 기록이 섞인다. */
-  ['member_id','member_name','member_company','member_project','member_phone','member_team','member_menu','member_cat','member_category','member_is_leader','senderName'].forEach(function(k){localStorage.removeItem(k);});
+  ['member_id','member_name','member_company','member_project','member_phone','member_team','member_menu','member_cat','member_category','member_is_leader','member_role','senderName'].forEach(function(k){localStorage.removeItem(k);});
   location.href='login.html';
 }
 function fireIconEffect(el){
@@ -352,7 +354,7 @@ async function withdrawMember(){
   }
   /* member_team/menu/cat은 report와 공유하는 키다 — 여기서 안 지우면 로그아웃 뒤 다른 사람이
      이 기기에서 로그인했을 때 앞사람 팀이 그대로 남아 그 팀 일보에 기록이 섞인다. */
-  ['member_id','member_name','member_company','member_project','member_phone','member_team','member_menu','member_cat','member_category','member_is_leader','senderName'].forEach(function(k){localStorage.removeItem(k);});
+  ['member_id','member_name','member_company','member_project','member_phone','member_team','member_menu','member_cat','member_category','member_is_leader','member_role','senderName'].forEach(function(k){localStorage.removeItem(k);});
   location.href='login.html';
 }
 

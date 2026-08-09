@@ -6,6 +6,8 @@
 <title>작업 사진</title>
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png"/>
+<!-- 관리자 화면은 운영자 전용. 작업자(worker)는 출퇴근체크로 돌려보낸다. -->
+<script src="/report/role-gate.js" data-require="admin" data-login="login.html"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:100vh;
