@@ -12,8 +12,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="작업사진"/>
-<!-- 작업사진은 현장관리자 이상. 작업자(worker)는 출퇴근체크로 돌려보낸다. -->
-<script src="/report/role-gate.js" data-require="manager"></script>
+<!-- 작업사진은 작업자도 쓴다(2026-08-11 사용자 요청) — 현장에서 사진을 찍는 사람이 곧
+     작업자이므로 여기서 막을 이유가 없다. 작업일보는 여전히 현장관리자 이상이라,
+     아래 "작업일보로" 버튼은 등급이 모자라면 감춘다(syncReportBtn). -->
+<script src="/report/role-gate.js" data-require="worker"></script>
 <style>
 :root{--brand-1:#1E3A5F;--brand-2:#2E5F9E;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -327,8 +329,17 @@ textarea.f{resize:none;height:48px;}
   if(n) document.getElementById('hdrUser').textContent=n+'님';
 })();
 // ── shoot는 완전히 독립된 화면이다. 공종/분류/기기번호는 여기서 직접 고른다.
-// "작업일보로" 버튼은 report로 돌아가는 간단한 이동 수단으로 항상 보여준다.
+// "작업일보로" 버튼은 report로 돌아가는 간단한 이동 수단이다.
 document.getElementById('reportReturnBtn').onclick=function(){ location.href='/report/app/index.html'; };
+/* 작업자는 작업일보에 못 들어간다(2026-08-11) — 눌러봐야 role-gate가 도로 튕겨내므로
+   버튼 자체를 감춘다. member_role이 없는 옛 세션은 등급 판정이 늦게 끝나므로
+   WR_ROLE_READY가 있으면 그게 끝난 뒤에 한 번 더 맞춘다. */
+function syncReportBtn(){
+  var b=document.getElementById('reportReturnBtn');
+  if(b) b.style.display = (window.wrRoleAtLeast && window.wrRoleAtLeast('manager')) ? '' : 'none';
+}
+syncReportBtn();
+if(window.WR_ROLE_READY && window.WR_ROLE_READY.then) window.WR_ROLE_READY.then(syncReportBtn);
 function logout(){
   /* member_team/menu/cat은 report와 공유하는 키다 — 여기서 안 지우면 로그아웃 뒤 다른 사람이
      이 기기에서 로그인했을 때 앞사람 팀이 그대로 남아 그 팀 일보에 기록이 섞인다. */
