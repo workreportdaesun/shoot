@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>로그인 — 작업 사진</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -22,9 +22,9 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
 .tab-bar{display:grid;grid-template-columns:1fr 1fr;margin-bottom:18px;
   border-radius:8px;overflow:hidden;border:1.5px solid #C8D8E8;}
 .tab-btn{padding:11px;border:none;background:#F7FAFC;font-size:15px;font-weight:700;
-  cursor:pointer;color:#5A7A9A;transition:all 0.2s;}
+  cursor:pointer;color:#4A6B8A;transition:all 0.2s;}
 .tab-btn.active{background:#2E5F9E;color:#fff;}
-.flbl{font-size:11px;font-weight:700;color:#5A7A9A;letter-spacing:0.5px;
+.flbl{font-size:11px;font-weight:700;color:#4A6B8A;letter-spacing:0.5px;
   text-transform:uppercase;margin-bottom:5px;margin-top:14px;}
 .flbl:first-child{margin-top:0;}
 .f{width:100%;background:#F7FAFC;border:1.5px solid #C8D8E8;border-radius:8px;
@@ -39,8 +39,8 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
   max-width:calc(100vw - 32px);padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;
   display:none;z-index:9998;white-space:normal;text-align:center;line-height:1.4;color:#fff;
   box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-#toast{background:#27AE60;}
-#toastE{background:#E74C3C;}
+#toast{background:#1B7A43;}
+#toastE{background:#C0392B;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -85,14 +85,14 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
       <select id="regTeam" class="f">
         <option>1팀(계장)</option><option>2팀(계장)</option><option>품질팀</option><option>안전관리팀</option>
       </select>
-      <div id="regTeamHint" style="font-size:11px;color:#5A7A9A;margin-top:4px;"></div>
+      <div id="regTeamHint" style="font-size:11px;color:#4A6B8A;margin-top:4px;"></div>
       <div class="flbl">공종</div>
       <select id="regMenu" class="f" onchange="renderRegCatOptions()">
         <option>시공</option><option>품질</option><option>자재</option><option>안전</option><option>화기/유도</option>
       </select>
       <div class="flbl">작업 분류</div>
       <select id="regCat" class="f"></select>
-      <div id="regCatHint" style="font-size:11px;color:#5A7A9A;margin-top:4px;"></div>
+      <div id="regCatHint" style="font-size:11px;color:#4A6B8A;margin-top:4px;"></div>
       <button class="sbtn" onclick="doSignup()">가입하기</button>
     </div>
   </div>

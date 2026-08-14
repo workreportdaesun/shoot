@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>작업 사진</title>
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png"/>
@@ -22,7 +22,7 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
 @keyframes wp-icon-pop{0%{transform:scale(1);}20%{transform:scale(1.4);}40%{transform:scale(.8);}60%{transform:scale(1.4);}80%{transform:scale(.8);}100%{transform:scale(1);}}
 .card{background:#fff;border:1px solid #D1DCE8;border-radius:16px;
   padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
-.flbl{font-size:13px;font-weight:700;color:#5A7A9A;letter-spacing:0.5px;
+.flbl{font-size:13px;font-weight:700;color:#4A6B8A;letter-spacing:0.5px;
   text-transform:uppercase;margin-bottom:8px;margin-top:12px;}
 .flbl:first-child{margin-top:0;}
 .f{width:100%;background:#F7FAFC;border:1.5px solid #C8D8E8;border-radius:10px;
@@ -36,7 +36,7 @@ textarea.f{resize:none;height:70px;}
 .cam-box{width:100%;aspect-ratio:4/3;background:#EAF0F8;border:2px dashed #A0BBD4;
   border-radius:14px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;cursor:pointer;position:relative;overflow:hidden;margin-bottom:12px;}
-.ratio-btn{border:1.5px solid #C8D8E8;background:#F7FAFC;color:#5A7A9A;border-radius:6px;
+.ratio-btn{border:1.5px solid #C8D8E8;background:#F7FAFC;color:#4A6B8A;border-radius:6px;
   padding:4px 12px;font-size:12px;font-weight:800;cursor:pointer;}
 .ratio-btn.active{background:#2E5F9E;border-color:#2E5F9E;color:#fff;}
 #settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);
@@ -48,13 +48,13 @@ textarea.f{resize:none;height:70px;}
 .set-header button{background:none;border:none;font-size:16px;color:#7A9AB8;cursor:pointer;}
 .set-section{margin-top:14px;padding-top:14px;border-top:1px solid #E8EEF4;}
 .set-section:first-of-type{margin-top:0;padding-top:0;border-top:none;}
-.set-title{font-size:12px;font-weight:800;color:#5A7A9A;text-transform:uppercase;
+.set-title{font-size:12px;font-weight:800;color:#4A6B8A;text-transform:uppercase;
   letter-spacing:0.5px;margin-bottom:8px;}
 .chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
 .chip{display:flex;align-items:center;gap:5px;background:#F7FAFC;border:1.5px solid #C8D8E8;
   border-radius:14px;padding:4px 6px 4px 12px;font-size:13px;color:#1A2332;}
-.chip button{background:none;border:none;color:#A0BBD4;font-size:13px;cursor:pointer;padding:2px 6px;}
-.chip button:hover{color:#E74C3C;}
+.chip button{background:none;border:none;color:#54708F;font-size:13px;cursor:pointer;padding:2px 6px;}
+.chip button:hover{color:#C0392B;}
 .add-row{display:flex;gap:6px;}
 .add-row input{flex:1;}
 .add-row button{flex-shrink:0;background:#2E5F9E;color:#fff;border:none;border-radius:8px;
@@ -89,7 +89,7 @@ canvas{width:100%;border-radius:12px;display:block;}
   cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:800;}
 .num-badge{position:absolute;bottom:3px;left:5px;font-size:11px;color:#fff;
   font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,0.6);}
-.empty-msg{grid-column:span 3;text-align:center;padding:24px;color:#A0BBD4;font-size:15px;}
+.empty-msg{grid-column:span 3;text-align:center;padding:24px;color:#54708F;font-size:15px;}
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:9999;
   padding:10px 16px 24px;background:linear-gradient(transparent,#F0F4F8 35%);}
 .btn-share{width:100%;padding:15px;border:none;border-radius:14px;font-size:16px;
@@ -100,8 +100,8 @@ canvas{width:100%;border-radius:12px;display:block;}
   max-width:calc(100vw - 32px);padding:12px 22px;border-radius:12px;font-size:15px;font-weight:700;
   display:none;z-index:9998;white-space:normal;text-align:center;line-height:1.4;color:#fff;
   box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-#toast{background:#27AE60;}
-#toastE{background:#E74C3C;}
+#toast{background:#1B7A43;}
+#toastE{background:#C0392B;}
 </style>
 </head>
 <body>
