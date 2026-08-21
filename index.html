@@ -312,6 +312,7 @@ textarea.f{resize:none;height:48px;}
   <button class="sbtn sbtn-kakao" id="kakaoBtn" onclick="shareToKakao()">&#128172; 카톡으로 전송</button>
 </div>
 
+<button class="sbtn sbtn-return" id="galleryLinkBtn" onclick="location.href='gallery/index.html'">&#128247; 촬영 이력 보기</button>
 <button class="sbtn sbtn-return" id="reportReturnBtn">&#9989; 작업일보로</button>
 
 <div id="toast"></div>
@@ -335,8 +336,13 @@ document.getElementById('reportReturnBtn').onclick=function(){ location.href='/r
    버튼 자체를 감춘다. member_role이 없는 옛 세션은 등급 판정이 늦게 끝나므로
    WR_ROLE_READY가 있으면 그게 끝난 뒤에 한 번 더 맞춘다. */
 function syncReportBtn(){
+  var atLeastManager=(window.wrRoleAtLeast && window.wrRoleAtLeast('manager'));
   var b=document.getElementById('reportReturnBtn');
-  if(b) b.style.display = (window.wrRoleAtLeast && window.wrRoleAtLeast('manager')) ? '' : 'none';
+  if(b) b.style.display = atLeastManager ? '' : 'none';
+  // gallery/index.html(촬영 이력)도 role-gate가 manager 이상이라, 그 등급 미만은 버튼 자체를
+  // 감춰서 눌러봐야 튕겨나가는 걸 막는다.
+  var g=document.getElementById('galleryLinkBtn');
+  if(g) g.style.display = atLeastManager ? '' : 'none';
 }
 syncReportBtn();
 if(window.WR_ROLE_READY && window.WR_ROLE_READY.then) window.WR_ROLE_READY.then(syncReportBtn);
@@ -1063,16 +1069,22 @@ function updCat(){
 
 document.getElementById("inTag").addEventListener("blur",checkTagDuplicate);
 
+// 2026-08-22 수정: 예전엔 cat+tag만 보고 무조건 "이미 작업완료"라고 경고했는데, 진행중
+// 상태는 같은 기기번호로 여러 장 찍는 게 정상 워크플로우라서 매번 잘못된 경고가 떴다.
+// 전송 시점의 진짜 잠금 로직(sendToSupabase의 terminalStatusOf)과 기준을 맞춰서, 실제로
+// 완료/변경후 등 "끝난" 상태로 이미 등록된 경우에만 경고하고 문구도 그 상태를 그대로 보여준다.
 async function checkTagDuplicate(){
   var tagEl=document.getElementById("inTag");
   var tag=(tagEl.value||"").trim();
   var cat=document.getElementById("inCat").value;
   if(!tag||!cat||!sbClient)return;
+  var terminal=terminalStatusOf(getWorkLabel());
+  if(!terminal)return; // 자재/안전/화기유도 등은 "완료" 개념이 없어 중복확인 대상 아님
   try{
-    var res=await sbClient.from('workreportdaesun-gallery').select('id').eq('cat',cat).eq('tag',tag).limit(1);
+    var res=await sbClient.from('workreportdaesun-gallery').select('id').eq('cat',cat).eq('tag',tag).eq('work_type',terminal).limit(1);
     if(res.error){console.error('중복 확인 실패',res.error);return;}
     if(res.data&&res.data.length){
-      var keep=confirm('['+cat+'] 분류에 이미 작업완료 TAG NO입니다: '+tag+'\n그래도 저장하시겠습니까?');
+      var keep=confirm('['+cat+'] 분류에 이미 '+terminal+' 상태의 TAG NO입니다: '+tag+'\n그래도 저장하시겠습니까?');
       if(!keep){tagEl.value='';tagEl.focus();}
     }
   }catch(e){console.error('중복 확인 실패',e);}

@@ -282,7 +282,6 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
       </select>
 <select id="fWt" onchange="renderPhotos()">
         <option value="">전체 구분</option>
-        <option>신규</option><option>작업전</option><option>작업후</option>
       </select>
       <div class="f-sep"></div>
       <button class="f-reset" onclick="resetFilter()">초기화</button>
@@ -345,11 +344,10 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
 
     <div class="fg">
       <label>작업 구분 <span class="auto-badge" id="wtBadge" style="display:none">자동</span></label>
-      <div class="wt-radios" id="wtRg">
-        <label><input type="radio" name="upWt" value="신규" checked><span>신규</span></label>
-        <label><input type="radio" name="upWt" value="작업전"><span>작업전</span></label>
-        <label><input type="radio" name="upWt" value="작업후"><span>작업후</span></label>
-      </div>
+      <!-- 2026-08-22: 예전엔 신규/작업전/작업후 3개 라디오였는데, 실제 shoot(index.html)이
+           저장하는 값은 공종별로 진행/완료/변경전/변경후/도급/사급/... 등 훨씬 다양해서
+           (WT_ALL, 아래 스크립트) select로 바꾸고 그 값을 그대로 옵션으로 쓴다. -->
+      <select id="upWt"></select>
     </div>
 
     <div class="fg">
@@ -421,11 +419,7 @@ body { font-family: 'Malgun Gothic', 'Segoe UI', sans-serif; background: var(--b
       </div>
       <div class="fg">
         <label>작업 구분</label>
-        <div class="wt-radios" id="eWtRg">
-          <label><input type="radio" name="eWt" value="신규" checked><span>신규</span></label>
-          <label><input type="radio" name="eWt" value="작업전"><span>작업전</span></label>
-          <label><input type="radio" name="eWt" value="작업후"><span>작업후</span></label>
-        </div>
+        <select id="eWt"></select>
       </div>
       <div class="fg"><label>작업 분류</label><select id="eCat"></select></div>
       <div class="fg-row">
@@ -577,6 +571,40 @@ const SUPABASE_KEY='sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
 let sbClient=null;
 try{ sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }
 catch(e){ console.error('Supabase 초기화 실패',e); }
+
+// 2026-08-22: 작업 분류(cats)가 시공용 21개로 고정돼 있어서, 안전(개인보호구 등)·화기유도
+// (용접작업 등) 분류로 찍힌 사진은 사이드바 목록에도 안 뜨고 수정 모달 드롭다운에도 없어서
+// 값이 조용히 틀어질 위험이 있었다. index.html/login.html이 보는 것과 같은
+// app_settings.cats_by_menu(전 공종 통틀어)를 읽어와 없는 분류만 추가한다 — 기존 순서·설정은
+// 그대로 두고 새 분류만 뒤에 덧붙이는 방식이라 기존 사이드바 정렬을 흩트리지 않는다.
+function applyRemoteCats(data){
+  if(!data||!data.cats_by_menu) return;
+  const seen=new Set(cats);
+  let changed=false;
+  Object.keys(data.cats_by_menu).forEach(menu=>{
+    const list=data.cats_by_menu[menu];
+    if(!Array.isArray(list)) return;
+    list.forEach(c=>{
+      if(c&&!seen.has(c)){ cats.push(c); enabledCats.add(c); seen.add(c); changed=true; }
+    });
+  });
+  if(changed){ saveSettings(); renderSidebar(); renderFolderList(); }
+}
+async function syncCatsFromSupabase(){
+  if(!sbClient) return;
+  try{
+    const res=await sbClient.from('app_settings').select('cats_by_menu').eq('id','global').single();
+    if(!res.error&&res.data) applyRemoteCats(res.data);
+  }catch(e){ console.error('작업분류 동기화 실패',e); }
+}
+function subscribeCatsRealtime(){
+  if(!sbClient||!sbClient.channel) return;
+  sbClient.channel('app_settings_changes_shoot_gallery')
+    .on('postgres_changes',{event:'*',schema:'public',table:'app_settings',filter:'id=eq.global'},payload=>{
+      if(payload.new) applyRemoteCats(payload.new);
+    })
+    .subscribe();
+}
 
 async function syncFromSupabase(){
   if(!sbClient){ alert('Supabase 연결 실패'); return; }
@@ -784,12 +812,15 @@ function parseWorkFilename(name) {
     r.date = `${m[1]}-${m[2]}-${m[3]}`;
     r.time = `${m[4].slice(0,2)}:${m[4].slice(2)}`;
   }
-  // 작업구분
-  const wtM = name.match(/WORK_\d+_\d+_(NEW|EDIT-BEFORE|EDIT-AFTER)_/);
-  if (wtM) {
-    const wmap = { NEW:'신규', 'EDIT-BEFORE':'작업전', 'EDIT-AFTER':'작업후' };
-    r.wt = wmap[wtM[1]] || '';
-  }
+  // 작업구분 — index.html buildFileName()의 WT_EN 매핑과 반드시 맞춰야 한다(2026-08-22 수정:
+  // 예전엔 NEW/EDIT-BEFORE/EDIT-AFTER라는, 실제로는 한 번도 생성된 적 없는 토큰을 찾고 있었다).
+  const WT_EN_TO_KR = {
+    'new':'신규','in-progress':'진행','done':'완료','mod-before':'변경전','mod-after':'변경후',
+    'contract':'도급','owner-supply':'사급','safety-check':'현장안전점검','safety-gear':'안전용품',
+    'fire-watch':'화기감시자','guide':'유도원'
+  };
+  const wtM = name.match(/WORK_\d+_\d+_([a-z-]+)_/);
+  if (wtM && WT_EN_TO_KR[wtM[1]]) r.wt = WT_EN_TO_KR[wtM[1]];
   // 기기번호
   const tagM = name.match(/\b([A-Z]{1,4}-\d{3,6}[A-Z]?)\b/);
   if (tagM) r.tag = tagM[1];
@@ -903,12 +934,45 @@ const CAT_ICON = {
   'CALIBRATION':'🔬','STEAM TRACING':'♨️',
   'SCAFFOLDING':'🏗️','OTHERS':'📁','관리자':'🗂️','장비작업':'🚜'
 };
-const WT_ORDER = ['신규','작업전','작업후'];
-const WT_META  = {
-  '신규':  { icon:'', ptCls:'pt-new',  bCls:'b-wt-new'  },
-  '작업전': { icon:'', ptCls:'pt-pre',  bCls:'b-wt-pre'  },
-  '작업후': { icon:'', ptCls:'pt-post', bCls:'b-wt-post' },
+// 2026-08-22: shoot(index.html)이 실제로 저장하는 작업구분 값은 메뉴별로 다르다 —
+// 시공: 진행/완료/변경전/변경후, 품질: 신규/변경전/변경후, 자재: 도급/사급,
+// 안전: 현장안전점검/안전용품, 화기/유도: 화기감시자/유도원 (index.html의 LABELS_BY_MENU 참고).
+// 예전엔 이 페이지가 "신규/작업전/작업후" 3개만 알아서 필터·배지·수정모달이 실제 값과
+// 전혀 안 맞았다 — 여기서 전체 어휘를 한 곳에 모아 select 옵션·배지 색상·OCR 인식에 공통으로 쓴다.
+const WT_ALL = ['진행','완료','변경전','변경후','신규','도급','사급','현장안전점검','안전용품','화기감시자','유도원'];
+const WT_META = {
+  '진행':         { icon:'', ptCls:'pt-pre',  bCls:'b-wt-pre'  },
+  '완료':         { icon:'', ptCls:'pt-post', bCls:'b-wt-post' },
+  '변경전':       { icon:'', ptCls:'pt-pre',  bCls:'b-wt-pre'  },
+  '변경후':       { icon:'', ptCls:'pt-post', bCls:'b-wt-post' },
+  '신규':         { icon:'', ptCls:'pt-new',  bCls:'b-wt-new'  },
+  '도급':         { icon:'', ptCls:'pt-new',  bCls:'b-wt-new'  },
+  '사급':         { icon:'', ptCls:'pt-post', bCls:'b-wt-post' },
+  '현장안전점검': { icon:'', ptCls:'pt-new',  bCls:'b-wt-new'  },
+  '안전용품':     { icon:'', ptCls:'pt-post', bCls:'b-wt-post' },
+  '화기감시자':   { icon:'', ptCls:'pt-new',  bCls:'b-wt-new'  },
+  '유도원':       { icon:'', ptCls:'pt-post', bCls:'b-wt-post' },
 };
+
+// upWt/eWt select에 WT_ALL 옵션을 채운다.
+function populateWtOptions(){
+  var html='<option value="">선택</option>'+WT_ALL.map(function(w){return '<option>'+w+'</option>';}).join('');
+  var up=document.getElementById('upWt'); if(up) up.innerHTML=html;
+  var ed=document.getElementById('eWt'); if(ed) ed.innerHTML=html;
+}
+populateWtOptions();
+
+// 목록에 없는 값(향후 새 공종/어휘·분류가 추가됐는데 아직 옵션 목록에 안 반영된 경우)도
+// 잃어버리지 않도록, select에 해당 value의 옵션이 없으면 즉석에서 추가해 둔다. 특히 수정
+// 모달에서 이게 없으면 select에 값이 안 잡혀 첫 옵션으로 조용히 표시되고, 그대로 저장을
+// 누르면 실제 작업구분/분류가 다른 값으로 덮어써지는 사고로 이어진다(eWt·eCat 둘 다 해당).
+function ensureOption(selectId, value){
+  if(!value) return;
+  var sel=document.getElementById(selectId);
+  if(!sel) return;
+  var has=Array.prototype.some.call(sel.options,function(o){return o.value===value;});
+  if(!has){ var o=document.createElement('option'); o.value=value; o.textContent=value; sel.appendChild(o); }
+}
 
 // ── 전체 자동 분류 ────────────────────────────────────
 function openBatch() {
@@ -1014,7 +1078,12 @@ function initDB() {
     }
     if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings',{keyPath:'key'});
   };
-  req.onsuccess = e => { db = e.target.result; loadSettings().then(() => { loadPhotos(); loadFolderHandle(); }); };
+  req.onsuccess = e => { db = e.target.result; loadSettings().then(() => {
+    loadPhotos(); loadFolderHandle();
+    // loadSettings()가 로컬 저장된 cats를 다 채운 뒤에 원격 병합을 해야, 방금 합친 분류를
+    // loadSettings가 통째로 덮어써버리는 경쟁 상태가 안 생긴다.
+    syncCatsFromSupabase(); subscribeCatsRealtime();
+  }); };
 }
 function txStore(name,mode='readonly'){ return db.transaction(name,mode).objectStore(name); }
 
@@ -1281,9 +1350,11 @@ function parseOCRText(text) {
   if(dateM) r.date=`${dateM[1]}-${dateM[2]}-${dateM[3]}`;
   const timeM=t.match(/(\d{1,2})[:\s시](\d{2})(?:[:\s분]|$)/m)||t.match(/(\d{2}):(\d{2}):\d{2}/);
   if(timeM) r.time=`${timeM[1].padStart(2,'0')}:${timeM[2]}`;
-  if(/작업.{0,2}후/.test(t)) r.wt='작업후';
-  else if(/작업.{0,2}전/.test(t)) r.wt='작업전';
-  else if(/신규/.test(t)) r.wt='신규';
+  // 2026-08-22: "작업전/작업후"는 실제로 워터마크에 찍히는 문구가 아니다(index.html은
+  // 진행/완료/변경전/변경후/도급/사급/현장안전점검/안전용품/화기감시자/유도원을 쓴다) —
+  // WT_ALL 전체를 대상으로 찾는다. 서로 부분 문자열로 겹치는 값이 없어 단순 포함검사로 충분.
+  const wtHit=WT_ALL.find(w=>t.includes(w));
+  if(wtHit) r.wt=wtHit;
   for(const cat of cats){if(t.includes(cat)){r.cat=cat;break;}}
 for(const tm of teams){if(t.includes(tm)){r.team=tm;break;}}
   if(!r.team){const tm=t.match(/([A-Z가-힣]\s*팀)/);if(tm)r.team=tm[1].replace(/\s/g,'');}
@@ -1348,9 +1419,9 @@ function openUpload() {
   document.getElementById('upTime').value=new Date().toTimeString().slice(0,5);
   ['upTag','upNote'].forEach(id=>document.getElementById(id).value='');
   if(selCat) document.getElementById('upCat').value=selCat;
-  if(selWt){const r=document.querySelector(`input[name="upWt"][value="${selWt}"]`);if(r)r.checked=true;}
-  else document.querySelector('input[name="upWt"][value="신규"]').checked=true;
-  ['upTag','upNote','upDate','upTime','upCat','upArea','upTeam','wtRg'].forEach(id=>{
+  ensureOption('upWt', selWt);
+  document.getElementById('upWt').value = selWt || '';
+  ['upTag','upNote','upDate','upTime','upCat','upArea','upTeam','upWt'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.dataset.me='';
   });
   ['tagBadge','dateBadge','timeBadge','wtBadge','catBadge','teamBadge','noteBadge'].forEach(id=>{
@@ -1388,8 +1459,9 @@ function resetAutoFills() {
     const el=document.getElementById(id); if(el&&!el.dataset.me) el.value='';
     if(badge) document.getElementById(badge).style.display='none';
   });
-  if(!document.getElementById('wtRg').dataset.me){
-    document.querySelector('input[name="upWt"][value="신규"]').checked=true;
+  const wtEl=document.getElementById('upWt');
+  if(wtEl&&!wtEl.dataset.me){
+    wtEl.value='';
     document.getElementById('wtBadge').style.display='none';
   }
 }
@@ -1432,7 +1504,7 @@ async function runFileAnalysis(file) {
     if(parsed.tag  &&!document.getElementById('upTag').dataset.me)  {document.getElementById('upTag').value=parsed.tag;  document.getElementById('tagBadge').style.display='';}
     if(parsed.date &&!document.getElementById('upDate').dataset.me) {document.getElementById('upDate').value=parsed.date; document.getElementById('dateBadge').style.display='';}
     if(parsed.time &&!document.getElementById('upTime').dataset.me) {document.getElementById('upTime').value=parsed.time; document.getElementById('timeBadge').style.display='';}
-    if(parsed.wt   &&!document.getElementById('wtRg').dataset.me)   {const r=document.querySelector(`input[name="upWt"][value="${parsed.wt}"]`);if(r){r.checked=true;document.getElementById('wtBadge').style.display='';}}
+    if(parsed.wt   &&!document.getElementById('upWt').dataset.me)    {ensureOption('upWt',parsed.wt);document.getElementById('upWt').value=parsed.wt;document.getElementById('wtBadge').style.display='';}
     if(parsed.cat  &&!document.getElementById('upCat').dataset.me)  {document.getElementById('upCat').value=parsed.cat;  document.getElementById('catBadge').style.display='';}
     if(parsed.team &&!document.getElementById('upTeam').dataset.me) {document.getElementById('upTeam').value=parsed.team; document.getElementById('teamBadge').style.display='';}
     if(parsed.note &&!document.getElementById('upNote').dataset.me) {document.getElementById('upNote').value=parsed.note; document.getElementById('noteBadge').style.display='';}
@@ -1460,22 +1532,18 @@ function retryOCR() {
     if(el) el.addEventListener('input',()=>{ el.dataset.me='1'; });
   },0);
 });
-['upCat','upTeam'].forEach(id=>{
+['upCat','upTeam','upWt'].forEach(id=>{
   setTimeout(()=>{
     const el=document.getElementById(id);
     if(el) el.addEventListener('change',()=>{ el.dataset.me='1'; });
   },0);
 });
-setTimeout(()=>{
-  const rg=document.getElementById('wtRg');
-  if(rg) rg.querySelectorAll('input').forEach(r=>r.addEventListener('change',()=>{ rg.dataset.me='1'; }));
-},0);
 
 async function savePhotos(){
   const date=document.getElementById('upDate').value;
   if(!date){alert('날짜를 입력해 주세요.');return;}
   const cat =document.getElementById('upCat').value;
-  const wt  =document.querySelector('input[name="upWt"]:checked').value;
+  const wt  =document.getElementById('upWt').value;
   const time=document.getElementById('upTime').value;
   const tag =document.getElementById('upTag').value.trim();
   const team=document.getElementById('upTeam').value;
@@ -1649,9 +1717,10 @@ function openDetailEdit() {
   document.getElementById('eTime').value = p.time || '';
   document.getElementById('eTag').value  = p.tag  || '';
   document.getElementById('eNote').value = p.note || '';
-  const r = document.querySelector(`input[name="eWt"][value="${p.wt}"]`);
-  if (r) r.checked = true;
+  ensureOption('eWt', p.wt);
+  document.getElementById('eWt').value = p.wt || '';
   document.getElementById('eCat').innerHTML  = cats.map(v=>`<option>${v}</option>`).join('');
+  ensureOption('eCat', p.cat);
   document.getElementById('eCat').value = p.cat || '';
   document.getElementById('eTeam').innerHTML = '<option value="">선택</option>'+teams.map(v=>`<option>${v}</option>`).join('');
   document.getElementById('eTeam').value = p.team || '';
@@ -1675,7 +1744,7 @@ async function saveDetailEdit() {
   p.time = document.getElementById('eTime').value;
   p.tag  = document.getElementById('eTag').value.trim();
   p.note = document.getElementById('eNote').value.trim();
-  p.wt   = document.querySelector('input[name="eWt"]:checked').value;
+  p.wt   = document.getElementById('eWt').value;
   p.cat  = document.getElementById('eCat').value;
   p.team = document.getElementById('eTeam').value;
   p.area = document.getElementById('eArea').value;
@@ -1769,6 +1838,19 @@ function populateDateFilter() {
   const dates = [...new Set(photos.map(p=>p.date).filter(Boolean))].sort().reverse();
   sel.innerHTML = '<option value="">전체 날짜</option>' + dates.map(d=>`<option value="${d}">${d}</option>`).join('');
   if (dates.includes(cur)) sel.value = cur;
+  populateWtFilter();
+}
+
+// 2026-08-22: 예전엔 fWt 옵션이 "신규/작업전/작업후" 3개로 고정돼 있어서 실제 저장되는
+// 작업구분(WT_ALL)과 안 맞아 필터가 사실상 항상 빈 결과를 냈다. 지금 사진 목록에 실제로
+// 존재하는 값만 동적으로 채워서, 앞으로 어휘가 또 바뀌어도 필터가 저절로 따라간다.
+function populateWtFilter() {
+  const sel = document.getElementById('fWt');
+  const cur = sel.value;
+  const present = [...new Set(photos.map(p=>p.wt).filter(Boolean))];
+  const ordered = WT_ALL.filter(w=>present.includes(w)).concat(present.filter(w=>!WT_ALL.includes(w)));
+  sel.innerHTML = '<option value="">전체 구분</option>' + ordered.map(w=>`<option>${w}</option>`).join('');
+  if (ordered.includes(cur)) sel.value = cur;
 }
 
 function populateSelects(){
