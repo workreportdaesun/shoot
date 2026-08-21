@@ -1,5 +1,5 @@
 // 이 파일 내용이 바뀌어야 브라우저가 새 버전을 감지해 업데이트 배너를 띄운다.
-// index.html/admin.html 등을 배포할 때마다 아래 버전 문자열을 함께 올려줄 것.
+// index.html/login.html 등을 배포할 때마다 아래 버전 문자열을 함께 올려줄 것.
 const SW_VERSION = '2026-08-22-1';
 const CACHE = 'wr-shoot-' + SW_VERSION;
 
