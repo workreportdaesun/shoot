@@ -1265,7 +1265,13 @@ async function addOriginalGalleryPhoto(file, rawDataUrl, info){
   showT("추가 완료! 총 "+savedPhotos.length+"장");
   // dbId가 채워지기 전에 전송 버튼을 누르면 finishSend()가 임시 백업을 못 지우고 남기게
   // 되므로, 여기서 끝까지 기다려 dbId를 확실히 채워둔다.
-  try{ photo.dbId=await dbAddPhoto(photo); }catch(e){ console.error("사진 저장 실패",e); }
+  try{ photo.dbId=await dbAddPhoto(photo); }catch(e){
+    // 저장공간 부족 등으로 로컬 백업에 실패해도 이전엔 콘솔에만 남기고 조용히 넘어갔다 —
+    // 전송 전에 앱이 꺼지거나 새로고침되면 이 사진은 복구 없이 그냥 사라졌다(2026-08-23).
+    // 지금 화면에는 남아 있으니 바로 전송하라고 알려준다.
+    console.error("사진 저장 실패",e);
+    showTE("⚠️ 사진이 기기에 임시 저장되지 못했습니다(저장공간 부족 등) — 지금 화면을 벗어나면 이 사진은 사라질 수 있으니 바로 전송해주세요");
+  }
 }
 
 // 갤러리에서 고른 사진은 모바일에서 워터마크 인식(OCR)을 하지 않는다 — 사진 한 장당
@@ -1418,7 +1424,11 @@ function autoAddPhoto(loadedImg){
   showT("추가 완료! 총 "+savedPhotos.length+"장");
   document.getElementById("inNote").value="";
   setTimeout(resetCam,800);
-  dbAddPhoto(photo).then(function(id){photo.dbId=id;}).catch(function(e){console.error("사진 저장 실패",e);});
+  dbAddPhoto(photo).then(function(id){photo.dbId=id;}).catch(function(e){
+    // addOriginalGalleryPhoto와 동일한 문제(2026-08-23) — 로컬 백업 실패를 화면에도 알린다.
+    console.error("사진 저장 실패",e);
+    showTE("⚠️ 사진이 기기에 임시 저장되지 못했습니다(저장공간 부족 등) — 지금 화면을 벗어나면 이 사진은 사라질 수 있으니 바로 전송해주세요");
+  });
 }
 
 function updateList(){
