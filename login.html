@@ -96,12 +96,36 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
       <button class="sbtn" onclick="doSignup()">가입하기</button>
     </div>
   </div>
+  <a href="/report/app/site-setup.html" style="display:block;text-align:center;font-size:12px;color:#4A6B8A;margin-top:10px;text-decoration:underline;">🏗️ 다른 회사/현장 관리자이신가요? 현장 연결하기</a>
 </div>
 
 <div id="toast"></div>
 <div id="toastE"></div>
 
 <script>
+// ── 초대 링크(?site=...)로 들어온 경우, 그 현장의 Supabase로 연결 정보를 갈아끼운다 ──
+// report/app/site-setup.html에서 만든 초대 링크를 직원이 열면 여기서 처리된다(같은 오리진
+// 이라 report/shoot 어느 로그인 화면으로 링크를 보내도 동일하게 동작).
+(function(){
+  var params=new URLSearchParams(location.search);
+  var siteParam=params.get('site');
+  if(!siteParam)return;
+  try{
+    var b64=siteParam.replace(/-/g,'+').replace(/_/g,'/');
+    while(b64.length%4)b64+='=';
+    var cfg=JSON.parse(decodeURIComponent(escape(atob(b64))));
+    if(cfg.u&&cfg.k){
+      ['member_id','member_name','member_company','member_project','member_phone','member_team',
+        'member_menu','member_cat','member_position','member_role','member_is_leader',
+        'member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
+      localStorage.setItem('site_supabase_url',cfg.u);
+      localStorage.setItem('site_supabase_key',cfg.k);
+      if(cfg.n)localStorage.setItem('site_name',cfg.n);
+    }
+  }catch(e){console.error('초대 링크 처리 실패',e);}
+  history.replaceState(null,'',location.pathname);
+})();
+
 // 2026-08-22: 다른 현장/회사가 각자 다른 Supabase에 연결해 쓸 수 있도록, site-setup.html에서
 // 저장한 값이 있으면 그걸 우선 쓰고 없으면 이 현장(대선이엔씨) 기본값을 그대로 쓴다.
 var SUPABASE_URL=localStorage.getItem('site_supabase_url')||'https://feymoykefzfwucbrqoja.supabase.co';
