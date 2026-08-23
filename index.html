@@ -828,11 +828,18 @@ function openDB(){
   });
   return dbPromise;
 }
+// 촬영 당시 로그인 계정을 같이 저장한다(2026-08-23) — 아래 restoreSavedPhotos 참고.
+// 팀장 폰이 고장나 팀원 폰으로 팀장 계정에 로그인해 대신 전송하는 경우처럼, 한 기기에
+// 서로 다른 계정이 번갈아 로그인될 수 있다. 계정 구분 없이 기기에 있는 사진을 전부
+// 복원해서 보여주면, 원래 이 기기 주인이 예전에 찍어놓고 못 보낸 사진이 지금 로그인한
+// 다른 계정 이름으로 전송돼버리는 문제가 있었다(촬영자 오기록).
 async function dbAddPhoto(p){
   var db=await openDB();
+  var memberId=localStorage.getItem('member_id')||'';
+  var memberName=localStorage.getItem('member_name')||'';
   return new Promise(function(resolve,reject){
     var tx=db.transaction(STORE_NAME,"readwrite");
-    var req=tx.objectStore(STORE_NAME).add({filename:p.filename,blob:p.blob,info:p.info});
+    var req=tx.objectStore(STORE_NAME).add({filename:p.filename,blob:p.blob,info:p.info,memberId:memberId,memberName:memberName});
     req.onsuccess=function(){resolve(req.result);};
     req.onerror=function(){reject(req.error);};
   });
@@ -866,11 +873,24 @@ async function restoreSavedPhotos(){
       req.onerror=function(){reject(req.error);};
     });
     if(!rows.length)return;
-    savedPhotos=rows.map(function(r){
+    var myId=localStorage.getItem('member_id')||'';
+    // memberId가 없는 옛 기록(이 수정 이전에 저장된 사진)은 계정 구분이 생기기 전 것이라
+    // 원래대로 내 것으로 취급한다 — 갑자기 안 보이게 하면 실제로 내가 못 보낸 사진을
+    // 잃어버린 것처럼 보인다. 앞으로 새로 찍는 사진부터는 항상 memberId가 붙는다.
+    var mine = rows.filter(function(r){ return !r.memberId || r.memberId===myId; });
+    var others = rows.filter(function(r){ return r.memberId && r.memberId!==myId; });
+    savedPhotos=mine.map(function(r){
       return {dataUrl:URL.createObjectURL(r.blob),filename:r.filename,blob:r.blob,info:r.info,dbId:r.id};
     });
     updateList();
-    showT("미전송 사진 "+savedPhotos.length+"장 복원됨");
+    if(savedPhotos.length) showT("미전송 사진 "+savedPhotos.length+"장 복원됨");
+    if(others.length){
+      // 다른 계정 것은 목록에 절대 섞지 않는다 — 지금 로그인한 사람 이름으로 잘못
+      // 전송되는 걸 막기 위함. 지우지도 않는다 — 원래 주인이 로그인하면 다시 보인다.
+      var names = others.reduce(function(set,r){ if(r.memberName) set[r.memberName]=true; return set; }, {});
+      var nameList = Object.keys(names).join(', ') || '다른 계정';
+      showTE("⚠️ 이 기기에 "+nameList+"님이 찍고 못 보낸 사진 "+others.length+"장이 있습니다 — 지금 계정으로는 전송되지 않으니, 그 계정으로 로그인해서 보내주세요");
+    }
   }catch(e){console.error("사진 복원 실패",e);}
 }
 restoreSavedPhotos();
