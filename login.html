@@ -93,6 +93,8 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
       <div class="flbl">작업 분류</div>
       <select id="regCat" class="f"></select>
       <div id="regCatHint" style="font-size:11px;color:#4A6B8A;margin-top:4px;"></div>
+      <div class="flbl">이메일 (선택 — 운영자만, 폰 분실 시 본인 확인용)</div>
+      <input type="email" id="regEmail" class="f" placeholder="example@email.com"/>
       <button class="sbtn" onclick="doSignup()">가입하기</button>
     </div>
   </div>
@@ -252,11 +254,15 @@ async function doSignup(){
   var team=document.getElementById('regTeam').value;
   var menu=document.getElementById('regMenu').value;
   var cat=document.getElementById('regCat').value;
+  var email=document.getElementById('regEmail').value.trim();
   if(!company||!project||!name||phone.length<10){showTE('모든 항목을 입력해 주세요.');return;}
+  // 이메일은 선택 입력이라 비워도 되지만, 적었으면 형식은 맞아야 한다(2026-08-23 — 운영자가
+  // 폰을 잃어버렸을 때 본인 확인용으로 쓴다. 로그인 수단이 아니라 연락처 용도로만 쓴다).
+  if(email && !/^\S+@\S+\.\S+$/.test(email)){showTE('이메일 형식이 올바르지 않습니다.');return;}
   showT('가입 중...');
   /* report(app/login.html doSignup)와 동일한 컬럼 누락 재시도 패턴 — team/menu/cat/is_leader
      컬럼이 아직 없는 상태로 배포돼도 나머지는 정상 저장되도록, 에러가 지목한 컬럼만 빼고 재시도한다. */
-  var full={company:company,project:project,name:name,phone:phone,team:team,menu:menu,cat:cat,is_leader:false};
+  var full={company:company,project:project,name:name,phone:phone,team:team,menu:menu,cat:cat,email:email,is_leader:false};
   var payload=Object.assign({},full);
   var stripped=[];
   var res;
