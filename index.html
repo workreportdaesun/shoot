@@ -748,13 +748,23 @@ async function fetchSettingsFromSupabase(){
     var res=await sbClient.from('app_settings').select('*').eq('id','global').single();
     if(res.error||!res.data)return;
     applyRemoteSettings(res.data);
+    lastCatStructKey=catStructKeyOf(res.data);
   }catch(e){console.error("설정 클라우드 불러오기 실패",e);}
 }
+/* 다른 앱(report/material 등)과 같은 문구·같은 판단 기준으로 "설정이 바뀌었다" 알림을 띄운다 —
+   payload에는 항상 cats_by_menu가 들어있어서 내용이 실제로 안 바뀐 저장(계획수량 등 무관한
+   갱신)에도 매번 뜨면 거슬리므로, 구조가 실제로 달라졌을 때만 띄운다(2026-09-14). */
+var lastCatStructKey='';
+function catStructKeyOf(o){ return JSON.stringify([o.cats_by_menu||{}, o.areas||[]]); }
 function subscribeSettingsRealtime(){
   if(!sbClient||!sbClient.channel)return;
   sbClient.channel('app_settings_changes_manage')
     .on('postgres_changes',{event:'*',schema:'public',table:'app_settings',filter:'id=eq.global'},function(payload){
-      if(payload.new) applyRemoteSettings(payload.new);
+      if(!payload.new) return;
+      applyRemoteSettings(payload.new);
+      var k=catStructKeyOf(payload.new);
+      if(lastCatStructKey && k!==lastCatStructKey) showT('⚙️ 설정이 업데이트되어 반영되었습니다');
+      lastCatStructKey=k;
     })
     .subscribe();
 }

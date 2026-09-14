@@ -590,7 +590,25 @@ function applyRemoteCats(data){
       if(c&&!seen.has(c)){ cats.push(c); enabledCats.add(c); seen.add(c); changed=true; }
     });
   });
-  if(changed){ saveSettings(); renderSidebar(); renderFolderList(); }
+  if(changed){
+    saveSettings(); renderSidebar(); renderFolderList();
+    showAppToast('⚙️ 설정이 업데이트되어 반영되었습니다');
+  }
+}
+/* 다른 앱(report/material/gallery 등)과 같은 문구로 통일한 가벼운 팝업 — 이 화면엔 토스트 UI가
+   없어서 인라인 스타일로 새로 만든다(2026-09-14). */
+function showAppToast(msg){
+  var t=document.getElementById('appToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='appToast';
+    t.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1A2332;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;opacity:0;pointer-events:none;transition:opacity .25s;box-shadow:0 4px 12px rgba(0,0,0,.25);max-width:calc(100vw - 32px);text-align:center;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){ t.style.opacity='0'; },2400);
 }
 async function syncCatsFromSupabase(){
   if(!sbClient) return;
