@@ -93,17 +93,45 @@ body{background:#F0F4F8;font-family:Arial,sans-serif;color:#1A2332;min-height:10
       <div class="flbl">작업 분류</div>
       <select id="regCat" class="f"></select>
       <div id="regCatHint" style="font-size:11px;color:#4A6B8A;margin-top:4px;"></div>
+      <div class="flbl">이메일 (선택 — 운영자만, 폰 분실 시 본인 확인용)</div>
+      <input type="email" id="regEmail" class="f" placeholder="example@email.com"/>
       <button class="sbtn" onclick="doSignup()">가입하기</button>
     </div>
   </div>
+  <a href="/report/app/site-setup.html" style="display:block;text-align:center;font-size:12px;color:#4A6B8A;margin-top:10px;text-decoration:underline;">🏗️ 다른 회사/현장 관리자이신가요? 현장 연결하기</a>
 </div>
 
 <div id="toast"></div>
 <div id="toastE"></div>
 
 <script>
-var SUPABASE_URL='https://feymoykefzfwucbrqoja.supabase.co';
-var SUPABASE_KEY='sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
+// ── 초대 링크(?site=...)로 들어온 경우, 그 현장의 Supabase로 연결 정보를 갈아끼운다 ──
+// report/app/site-setup.html에서 만든 초대 링크를 직원이 열면 여기서 처리된다(같은 오리진
+// 이라 report/shoot 어느 로그인 화면으로 링크를 보내도 동일하게 동작).
+(function(){
+  var params=new URLSearchParams(location.search);
+  var siteParam=params.get('site');
+  if(!siteParam)return;
+  try{
+    var b64=siteParam.replace(/-/g,'+').replace(/_/g,'/');
+    while(b64.length%4)b64+='=';
+    var cfg=JSON.parse(decodeURIComponent(escape(atob(b64))));
+    if(cfg.u&&cfg.k){
+      ['member_id','member_name','member_company','member_project','member_phone','member_team',
+        'member_menu','member_cat','member_position','member_role','member_is_leader',
+        'member_category','senderName'].forEach(function(k){localStorage.removeItem(k);});
+      localStorage.setItem('site_supabase_url',cfg.u);
+      localStorage.setItem('site_supabase_key',cfg.k);
+      if(cfg.n)localStorage.setItem('site_name',cfg.n);
+    }
+  }catch(e){console.error('초대 링크 처리 실패',e);}
+  history.replaceState(null,'',location.pathname);
+})();
+
+// 2026-08-22: 다른 현장/회사가 각자 다른 Supabase에 연결해 쓸 수 있도록, site-setup.html에서
+// 저장한 값이 있으면 그걸 우선 쓰고 없으면 이 현장(대선이엔씨) 기본값을 그대로 쓴다.
+var SUPABASE_URL=localStorage.getItem('site_supabase_url')||'https://feymoykefzfwucbrqoja.supabase.co';
+var SUPABASE_KEY=localStorage.getItem('site_supabase_key')||'sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
 var sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // 이미 로그인된 경우 바로 이동
@@ -226,11 +254,15 @@ async function doSignup(){
   var team=document.getElementById('regTeam').value;
   var menu=document.getElementById('regMenu').value;
   var cat=document.getElementById('regCat').value;
+  var email=document.getElementById('regEmail').value.trim();
   if(!company||!project||!name||phone.length<10){showTE('모든 항목을 입력해 주세요.');return;}
+  // 이메일은 선택 입력이라 비워도 되지만, 적었으면 형식은 맞아야 한다(2026-08-23 — 운영자가
+  // 폰을 잃어버렸을 때 본인 확인용으로 쓴다. 로그인 수단이 아니라 연락처 용도로만 쓴다).
+  if(email && !/^\S+@\S+\.\S+$/.test(email)){showTE('이메일 형식이 올바르지 않습니다.');return;}
   showT('가입 중...');
   /* report(app/login.html doSignup)와 동일한 컬럼 누락 재시도 패턴 — team/menu/cat/is_leader
      컬럼이 아직 없는 상태로 배포돼도 나머지는 정상 저장되도록, 에러가 지목한 컬럼만 빼고 재시도한다. */
-  var full={company:company,project:project,name:name,phone:phone,team:team,menu:menu,cat:cat,is_leader:false};
+  var full={company:company,project:project,name:name,phone:phone,team:team,menu:menu,cat:cat,email:email,is_leader:false};
   var payload=Object.assign({},full);
   var stripped=[];
   var res;

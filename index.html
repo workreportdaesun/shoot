@@ -312,6 +312,7 @@ textarea.f{resize:none;height:48px;}
   <button class="sbtn sbtn-kakao" id="kakaoBtn" onclick="shareToKakao()">&#128172; 카톡으로 전송</button>
 </div>
 
+<button class="sbtn sbtn-return" id="galleryLinkBtn" onclick="location.href='gallery/index.html'">&#128247; 촬영 이력 보기</button>
 <button class="sbtn sbtn-return" id="reportReturnBtn">&#9989; 작업일보로</button>
 
 <div id="toast"></div>
@@ -335,8 +336,13 @@ document.getElementById('reportReturnBtn').onclick=function(){ location.href='/r
    버튼 자체를 감춘다. member_role이 없는 옛 세션은 등급 판정이 늦게 끝나므로
    WR_ROLE_READY가 있으면 그게 끝난 뒤에 한 번 더 맞춘다. */
 function syncReportBtn(){
+  var atLeastManager=(window.wrRoleAtLeast && window.wrRoleAtLeast('manager'));
   var b=document.getElementById('reportReturnBtn');
-  if(b) b.style.display = (window.wrRoleAtLeast && window.wrRoleAtLeast('manager')) ? '' : 'none';
+  if(b) b.style.display = atLeastManager ? '' : 'none';
+  // gallery/index.html(촬영 이력)도 role-gate가 manager 이상이라, 그 등급 미만은 버튼 자체를
+  // 감춰서 눌러봐야 튕겨나가는 걸 막는다.
+  var g=document.getElementById('galleryLinkBtn');
+  if(g) g.style.display = atLeastManager ? '' : 'none';
 }
 syncReportBtn();
 if(window.WR_ROLE_READY && window.WR_ROLE_READY.then) window.WR_ROLE_READY.then(syncReportBtn);
@@ -377,8 +383,10 @@ function localDateStr(d){
 }
 
 // ── Supabase ──────────────────────────────────────────
-var SUPABASE_URL='https://feymoykefzfwucbrqoja.supabase.co';
-var SUPABASE_KEY='sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
+// 2026-08-22: 다른 현장/회사가 각자 다른 Supabase에 연결해 쓸 수 있도록, site-setup.html에서
+// 저장한 값이 있으면 그걸 우선 쓰고 없으면 이 현장(대선이엔씨) 기본값을 그대로 쓴다.
+var SUPABASE_URL=localStorage.getItem('site_supabase_url')||'https://feymoykefzfwucbrqoja.supabase.co';
+var SUPABASE_KEY=localStorage.getItem('site_supabase_key')||'sb_publishable_ANT6G7_ka3IPHRk_4vLtBg_7G9NWW7i';
 var sbClient=null;
 try{ sbClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY); }
 catch(e){ console.error('Supabase 초기화 실패',e); }
@@ -740,13 +748,23 @@ async function fetchSettingsFromSupabase(){
     var res=await sbClient.from('app_settings').select('*').eq('id','global').single();
     if(res.error||!res.data)return;
     applyRemoteSettings(res.data);
+    lastCatStructKey=catStructKeyOf(res.data);
   }catch(e){console.error("설정 클라우드 불러오기 실패",e);}
 }
+/* 다른 앱(report/material 등)과 같은 문구·같은 판단 기준으로 "설정이 바뀌었다" 알림을 띄운다 —
+   payload에는 항상 cats_by_menu가 들어있어서 내용이 실제로 안 바뀐 저장(계획수량 등 무관한
+   갱신)에도 매번 뜨면 거슬리므로, 구조가 실제로 달라졌을 때만 띄운다(2026-09-14). */
+var lastCatStructKey='';
+function catStructKeyOf(o){ return JSON.stringify([o.cats_by_menu||{}, o.areas||[]]); }
 function subscribeSettingsRealtime(){
   if(!sbClient||!sbClient.channel)return;
   sbClient.channel('app_settings_changes_manage')
     .on('postgres_changes',{event:'*',schema:'public',table:'app_settings',filter:'id=eq.global'},function(payload){
-      if(payload.new) applyRemoteSettings(payload.new);
+      if(!payload.new) return;
+      applyRemoteSettings(payload.new);
+      var k=catStructKeyOf(payload.new);
+      if(lastCatStructKey && k!==lastCatStructKey) showT('⚙️ 설정이 업데이트되어 반영되었습니다');
+      lastCatStructKey=k;
     })
     .subscribe();
 }
@@ -820,11 +838,18 @@ function openDB(){
   });
   return dbPromise;
 }
+// 촬영 당시 로그인 계정을 같이 저장한다(2026-08-23) — 아래 restoreSavedPhotos 참고.
+// 팀장 폰이 고장나 팀원 폰으로 팀장 계정에 로그인해 대신 전송하는 경우처럼, 한 기기에
+// 서로 다른 계정이 번갈아 로그인될 수 있다. 계정 구분 없이 기기에 있는 사진을 전부
+// 복원해서 보여주면, 원래 이 기기 주인이 예전에 찍어놓고 못 보낸 사진이 지금 로그인한
+// 다른 계정 이름으로 전송돼버리는 문제가 있었다(촬영자 오기록).
 async function dbAddPhoto(p){
   var db=await openDB();
+  var memberId=localStorage.getItem('member_id')||'';
+  var memberName=localStorage.getItem('member_name')||'';
   return new Promise(function(resolve,reject){
     var tx=db.transaction(STORE_NAME,"readwrite");
-    var req=tx.objectStore(STORE_NAME).add({filename:p.filename,blob:p.blob,info:p.info});
+    var req=tx.objectStore(STORE_NAME).add({filename:p.filename,blob:p.blob,info:p.info,memberId:memberId,memberName:memberName});
     req.onsuccess=function(){resolve(req.result);};
     req.onerror=function(){reject(req.error);};
   });
@@ -858,11 +883,24 @@ async function restoreSavedPhotos(){
       req.onerror=function(){reject(req.error);};
     });
     if(!rows.length)return;
-    savedPhotos=rows.map(function(r){
+    var myId=localStorage.getItem('member_id')||'';
+    // memberId가 없는 옛 기록(이 수정 이전에 저장된 사진)은 계정 구분이 생기기 전 것이라
+    // 원래대로 내 것으로 취급한다 — 갑자기 안 보이게 하면 실제로 내가 못 보낸 사진을
+    // 잃어버린 것처럼 보인다. 앞으로 새로 찍는 사진부터는 항상 memberId가 붙는다.
+    var mine = rows.filter(function(r){ return !r.memberId || r.memberId===myId; });
+    var others = rows.filter(function(r){ return r.memberId && r.memberId!==myId; });
+    savedPhotos=mine.map(function(r){
       return {dataUrl:URL.createObjectURL(r.blob),filename:r.filename,blob:r.blob,info:r.info,dbId:r.id};
     });
     updateList();
-    showT("미전송 사진 "+savedPhotos.length+"장 복원됨");
+    if(savedPhotos.length) showT("미전송 사진 "+savedPhotos.length+"장 복원됨");
+    if(others.length){
+      // 다른 계정 것은 목록에 절대 섞지 않는다 — 지금 로그인한 사람 이름으로 잘못
+      // 전송되는 걸 막기 위함. 지우지도 않는다 — 원래 주인이 로그인하면 다시 보인다.
+      var names = others.reduce(function(set,r){ if(r.memberName) set[r.memberName]=true; return set; }, {});
+      var nameList = Object.keys(names).join(', ') || '다른 계정';
+      showTE("⚠️ 이 기기에 "+nameList+"님이 찍고 못 보낸 사진 "+others.length+"장이 있습니다 — 지금 계정으로는 전송되지 않으니, 그 계정으로 로그인해서 보내주세요");
+    }
   }catch(e){console.error("사진 복원 실패",e);}
 }
 restoreSavedPhotos();
@@ -1063,16 +1101,22 @@ function updCat(){
 
 document.getElementById("inTag").addEventListener("blur",checkTagDuplicate);
 
+// 2026-08-22 수정: 예전엔 cat+tag만 보고 무조건 "이미 작업완료"라고 경고했는데, 진행중
+// 상태는 같은 기기번호로 여러 장 찍는 게 정상 워크플로우라서 매번 잘못된 경고가 떴다.
+// 전송 시점의 진짜 잠금 로직(sendToSupabase의 terminalStatusOf)과 기준을 맞춰서, 실제로
+// 완료/변경후 등 "끝난" 상태로 이미 등록된 경우에만 경고하고 문구도 그 상태를 그대로 보여준다.
 async function checkTagDuplicate(){
   var tagEl=document.getElementById("inTag");
   var tag=(tagEl.value||"").trim();
   var cat=document.getElementById("inCat").value;
   if(!tag||!cat||!sbClient)return;
+  var terminal=terminalStatusOf(getWorkLabel());
+  if(!terminal)return; // 자재/안전/화기유도 등은 "완료" 개념이 없어 중복확인 대상 아님
   try{
-    var res=await sbClient.from('workreportdaesun-gallery').select('id').eq('cat',cat).eq('tag',tag).limit(1);
+    var res=await sbClient.from('workreportdaesun-gallery').select('id').eq('cat',cat).eq('tag',tag).eq('work_type',terminal).limit(1);
     if(res.error){console.error('중복 확인 실패',res.error);return;}
     if(res.data&&res.data.length){
-      var keep=confirm('['+cat+'] 분류에 이미 작업완료 TAG NO입니다: '+tag+'\n그래도 저장하시겠습니까?');
+      var keep=confirm('['+cat+'] 분류에 이미 '+terminal+' 상태의 TAG NO입니다: '+tag+'\n그래도 저장하시겠습니까?');
       if(!keep){tagEl.value='';tagEl.focus();}
     }
   }catch(e){console.error('중복 확인 실패',e);}
@@ -1251,7 +1295,13 @@ async function addOriginalGalleryPhoto(file, rawDataUrl, info){
   showT("추가 완료! 총 "+savedPhotos.length+"장");
   // dbId가 채워지기 전에 전송 버튼을 누르면 finishSend()가 임시 백업을 못 지우고 남기게
   // 되므로, 여기서 끝까지 기다려 dbId를 확실히 채워둔다.
-  try{ photo.dbId=await dbAddPhoto(photo); }catch(e){ console.error("사진 저장 실패",e); }
+  try{ photo.dbId=await dbAddPhoto(photo); }catch(e){
+    // 저장공간 부족 등으로 로컬 백업에 실패해도 이전엔 콘솔에만 남기고 조용히 넘어갔다 —
+    // 전송 전에 앱이 꺼지거나 새로고침되면 이 사진은 복구 없이 그냥 사라졌다(2026-08-23).
+    // 지금 화면에는 남아 있으니 바로 전송하라고 알려준다.
+    console.error("사진 저장 실패",e);
+    showTE("⚠️ 사진이 기기에 임시 저장되지 못했습니다(저장공간 부족 등) — 지금 화면을 벗어나면 이 사진은 사라질 수 있으니 바로 전송해주세요");
+  }
 }
 
 // 갤러리에서 고른 사진은 모바일에서 워터마크 인식(OCR)을 하지 않는다 — 사진 한 장당
@@ -1404,7 +1454,11 @@ function autoAddPhoto(loadedImg){
   showT("추가 완료! 총 "+savedPhotos.length+"장");
   document.getElementById("inNote").value="";
   setTimeout(resetCam,800);
-  dbAddPhoto(photo).then(function(id){photo.dbId=id;}).catch(function(e){console.error("사진 저장 실패",e);});
+  dbAddPhoto(photo).then(function(id){photo.dbId=id;}).catch(function(e){
+    // addOriginalGalleryPhoto와 동일한 문제(2026-08-23) — 로컬 백업 실패를 화면에도 알린다.
+    console.error("사진 저장 실패",e);
+    showTE("⚠️ 사진이 기기에 임시 저장되지 못했습니다(저장공간 부족 등) — 지금 화면을 벗어나면 이 사진은 사라질 수 있으니 바로 전송해주세요");
+  });
 }
 
 function updateList(){
